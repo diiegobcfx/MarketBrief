@@ -17,11 +17,12 @@
   .setup-icon { font-size: 48px; margin-bottom: 20px; }
   .setup-title { font-size: 24px; font-weight: 800; margin-bottom: 8px; }
   .setup-title span { color: #00ff88; }
-  .setup-sub { font-size: 13px; color: #5a5a7a; line-height: 1.6; margin-bottom: 28px; max-width: 300px; }
-  .setup-input { width: 100%; padding: 14px; background: #111118; border: 1px solid #1e1e2e; border-radius: 12px; color: #e8e8f0; font-size: 13px; font-family: monospace; margin-bottom: 12px; -webkit-appearance: none; outline: none; }
+  .setup-sub { font-size: 13px; color: #5a5a7a; line-height: 1.6; margin-bottom: 24px; max-width: 300px; }
+  .setup-label { font-size: 10px; color: #5a5a7a; letter-spacing: 1px; text-transform: uppercase; text-align: left; width: 100%; margin-bottom: 6px; margin-top: 14px; }
+  .setup-input { width: 100%; padding: 14px; background: #111118; border: 1px solid #1e1e2e; border-radius: 12px; color: #e8e8f0; font-size: 13px; font-family: monospace; margin-bottom: 4px; -webkit-appearance: none; outline: none; }
   .setup-input:focus { border-color: #00ff88; }
-  .setup-btn { width: 100%; padding: 15px; background: #00ff88; color: #000; border: none; border-radius: 13px; font-size: 14px; font-weight: 700; cursor: pointer; -webkit-appearance: none; }
-  .setup-note { font-size: 11px; color: #5a5a7a; margin-top: 14px; line-height: 1.5; }
+  .setup-btn { width: 100%; padding: 15px; background: #00ff88; color: #000; border: none; border-radius: 13px; font-size: 14px; font-weight: 700; cursor: pointer; -webkit-appearance: none; margin-top: 20px; }
+  .setup-note { font-size: 11px; color: #5a5a7a; margin-top: 14px; line-height: 1.6; }
 
   /* APP */
   #appScreen { display: none; }
@@ -44,11 +45,13 @@
   #mainBtn { width: 100%; padding: 15px; background: #00ff88; color: #000; border: none; border-radius: 13px; font-size: 14px; font-weight: 700; cursor: pointer; margin-bottom: 16px; -webkit-appearance: none; }
   #mainBtn:disabled { opacity: 0.6; }
   #mainBtn.done { background: transparent; color: #00ff88; border: 1px solid #1e1e2e; }
+  .step-indicator { font-size: 11px; color: #5a5a7a; text-align: center; margin-bottom: 10px; font-family: monospace; }
   .empty-state { text-align: center; padding: 40px 20px; color: #5a5a7a; }
   .empty-icon { font-size: 40px; margin-bottom: 12px; }
   .empty-state p { font-size: 13px; line-height: 1.6; }
   .skel { background: #111118; border: 1px solid #1e1e2e; border-radius: 13px; padding: 14px; margin-bottom: 10px; }
-  .sl { background: #16161f; border-radius: 5px; margin-bottom: 7px; }
+  .sl { background: #16161f; border-radius: 5px; margin-bottom: 7px; animation: pulse 1.4s infinite; }
+  @keyframes pulse { 0%,100%{opacity:0.4} 50%{opacity:0.8} }
   .error-box { background: rgba(255,68,102,0.08); border: 1px solid rgba(255,68,102,0.2); border-radius: 12px; padding: 14px; font-size: 12px; color: #ff4466; line-height: 1.6; word-break: break-word; }
   #result { background: #111118; border: 1px solid #1e1e2e; border-radius: 14px; padding: 16px; }
   .l-empty { height: 8px; }
@@ -62,6 +65,7 @@
   .l-bullet { font-size: 13px; color: #c0c0d8; padding: 3px 0; line-height: 1.5; }
   .l-fecha { font-size: 11px; font-family: monospace; color: #5a5a7a; margin-bottom: 4px; }
   .l-normal { font-size: 13px; color: #9090b0; line-height: 1.6; margin-bottom: 2px; }
+  .source-tag { font-size: 10px; color: #5a5a7a; font-family: monospace; margin-top: 12px; padding-top: 12px; border-top: 1px solid #1e1e2e; }
   .reset-btn { font-size: 11px; color: #5a5a7a; background: none; border: none; cursor: pointer; display: block; margin: 16px auto 0; text-decoration: underline; }
 </style>
 </head>
@@ -71,10 +75,16 @@
 <div id="setupScreen">
   <div class="setup-icon">🔑</div>
   <div class="setup-title">Market<span>Brief</span></div>
-  <p class="setup-sub">Introduce tu API key de Groq para empezar. Se guardará solo en tu dispositivo y nunca saldrá de él.</p>
-  <input class="setup-input" type="password" id="keyInput" placeholder="gsk_..." autocomplete="off" autocorrect="off" spellcheck="false" />
-  <button class="setup-btn" onclick="saveKey()">Guardar y continuar →</button>
-  <p class="setup-note">Gratis · Tu key nunca sale de tu iPhone<br>Consíguela en console.groq.com → API Keys</p>
+  <p class="setup-sub">Introduce tus API keys para activar noticias reales en tiempo real + análisis IA.</p>
+
+  <div class="setup-label">API Key de Groq (IA)</div>
+  <input class="setup-input" type="password" id="groqKey" placeholder="gsk_..." autocomplete="off" autocorrect="off" spellcheck="false" />
+
+  <div class="setup-label">API Key de NewsAPI (noticias reales)</div>
+  <input class="setup-input" type="password" id="newsKey" placeholder="xxxxxxxxxxxxxxxx..." autocomplete="off" autocorrect="off" spellcheck="false" />
+
+  <button class="setup-btn" onclick="saveKeys()">Guardar y continuar →</button>
+  <p class="setup-note">Tus keys se guardan solo en tu dispositivo y nunca salen de él.<br>Groq: console.groq.com · NewsAPI: newsapi.org</p>
 </div>
 
 <!-- APP -->
@@ -104,15 +114,16 @@
     </div>
 
     <button id="mainBtn" onclick="generate()">⚡ Generar Briefing de Hoy</button>
+    <div id="stepMsg" class="step-indicator"></div>
 
     <div id="content">
       <div class="empty-state">
         <div class="empty-icon">📊</div>
-        <p>Pulsa el botón para recibir tu briefing con las noticias de la semana y su impacto en cada activo.</p>
+        <p>Pulsa el botón para recibir tu briefing con noticias reales de hoy analizadas por IA.</p>
       </div>
     </div>
 
-    <button class="reset-btn" onclick="resetKey()">Cambiar API key</button>
+    <button class="reset-btn" onclick="resetKeys()">Cambiar API keys</button>
   </div>
 </div>
 
@@ -121,16 +132,15 @@
   var DAYS   = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
   var now    = new Date();
 
-  var savedKey = localStorage.getItem('mb_groq_key');
-  if (savedKey) showApp();
+  if (localStorage.getItem('mb_groq_key') && localStorage.getItem('mb_news_key')) showApp();
 
-  function saveKey() {
-    var k = document.getElementById('keyInput').value.trim();
-    if (!k || k.indexOf('gsk_') !== 0) {
-      alert('Introduce una key válida de Groq (empieza por gsk_)');
-      return;
-    }
-    localStorage.setItem('mb_groq_key', k);
+  function saveKeys() {
+    var gk = document.getElementById('groqKey').value.trim();
+    var nk = document.getElementById('newsKey').value.trim();
+    if (!gk || gk.indexOf('gsk_') !== 0) { alert('Key de Groq inválida (debe empezar por gsk_)'); return; }
+    if (!nk || nk.length < 10) { alert('Key de NewsAPI inválida'); return; }
+    localStorage.setItem('mb_groq_key', gk);
+    localStorage.setItem('mb_news_key', nk);
     showApp();
   }
 
@@ -141,46 +151,107 @@
     document.getElementById('monthStr').textContent = MONTHS[now.getMonth()] + ' ' + DAYS[now.getDay()];
   }
 
-  function resetKey() {
+  function resetKeys() {
     localStorage.removeItem('mb_groq_key');
+    localStorage.removeItem('mb_news_key');
     document.getElementById('appScreen').style.display   = 'none';
     document.getElementById('setupScreen').style.display = 'flex';
-    document.getElementById('keyInput').value = '';
+    document.getElementById('groqKey').value = '';
+    document.getElementById('newsKey').value = '';
+  }
+
+  function setStep(msg) {
+    document.getElementById('stepMsg').textContent = msg;
   }
 
   var todayStr = now.toLocaleDateString('es-ES', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
 
-  var PROMPT = 'Hoy es ' + todayStr + '. Genera mi briefing de trading para esta sesión.\n\nEstructura exacta:\n\n📡 CONTEXTO DE LA SEMANA\n[2-3 frases sobre qué está dominando el mercado esta semana]\n\n⚡ SESIÓN DE HOY\n• Sentimiento: [Risk-on / Risk-off / Mixto]\n• Volatilidad: [Alta / Media / Baja]\n• Sesiones activas: [cuáles están abiertas ahora]\n• Consejo: [un consejo concreto para hoy]\n\n📰 NOTICIAS CLAVE\n\n1. [TÍTULO] — Impacto: [ALTO/MEDIO/BAJO]\n📅 [día de la semana]\n[2 frases explicando qué pasó y por qué importa]\nActivos afectados: [lista con ↑ o ↓ o → y el ticker]\n\n2. [igual]\n3. [igual]\n4. [igual]\n5. [igual]\n\nSé específico con los tickers (SPY, QQQ, BTC, ETH, GLD, DXY, OIL, NVDA, AAPL, EURUSD, USDJPY, etc).';
-
   async function generate() {
-    var key = localStorage.getItem('mb_groq_key');
-    if (!key) { resetKey(); return; }
+    var groqKey = localStorage.getItem('mb_groq_key');
+    var newsKey = localStorage.getItem('mb_news_key');
+    if (!groqKey || !newsKey) { resetKeys(); return; }
 
     var btn     = document.getElementById('mainBtn');
     var content = document.getElementById('content');
 
     btn.disabled    = true;
     btn.className   = '';
-    btn.textContent = '⏳ Analizando mercados...';
+    btn.textContent = '⏳ Cargando...';
 
     content.innerHTML =
-      '<div class="skel"><div class="sl" style="width:30%;height:10px"></div><div class="sl" style="width:85%;height:15px;margin-top:4px"></div><div class="sl" style="width:95%;height:10px"></div><div class="sl" style="width:60%;height:10px"></div></div>' +
-      '<div class="skel"><div class="sl" style="width:40%;height:10px"></div><div class="sl" style="width:75%;height:15px;margin-top:4px"></div><div class="sl" style="width:90%;height:10px"></div><div class="sl" style="width:55%;height:10px"></div></div>' +
-      '<div class="skel"><div class="sl" style="width:35%;height:10px"></div><div class="sl" style="width:80%;height:15px;margin-top:4px"></div><div class="sl" style="width:70%;height:10px"></div><div class="sl" style="width:50%;height:10px"></div></div>';
+      '<div class="skel"><div class="sl" style="width:30%;height:10px"></div><div class="sl" style="width:85%;height:15px;margin-top:4px"></div><div class="sl" style="width:95%;height:10px"></div></div>' +
+      '<div class="skel"><div class="sl" style="width:40%;height:10px"></div><div class="sl" style="width:75%;height:15px;margin-top:4px"></div><div class="sl" style="width:90%;height:10px"></div></div>' +
+      '<div class="skel"><div class="sl" style="width:35%;height:10px"></div><div class="sl" style="width:80%;height:15px;margin-top:4px"></div><div class="sl" style="width:70%;height:10px"></div></div>';
+
+    var newsText = '';
+    var sources  = [];
+
+    try {
+      // PASO 1: Obtener noticias reales de NewsAPI
+      setStep('📡 Buscando noticias financieras de hoy...');
+      var newsRes = await fetch(
+        'https://newsapi.org/v2/everything?q=economy+OR+stocks+OR+bitcoin+OR+forex+OR+federal+reserve+OR+inflation&language=es&sortBy=publishedAt&pageSize=10&apiKey=' + newsKey
+      );
+
+      if (newsRes.ok) {
+        var newsData = await newsRes.json();
+        if (newsData.articles && newsData.articles.length > 0) {
+          for (var i = 0; i < Math.min(newsData.articles.length, 10); i++) {
+            var a = newsData.articles[i];
+            newsText += '- ' + a.title + ' (' + (a.source && a.source.name ? a.source.name : '') + ', ' + (a.publishedAt ? a.publishedAt.slice(0,10) : '') + ')\n';
+            if (a.description) newsText += '  ' + a.description + '\n';
+            if (a.source && a.source.name) sources.push(a.source.name);
+          }
+        }
+      }
+
+      // Si no hay noticias en español, buscar en inglés
+      if (!newsText) {
+        var newsRes2 = await fetch(
+          'https://newsapi.org/v2/everything?q=stocks+OR+bitcoin+OR+federal+reserve+OR+inflation+OR+market&language=en&sortBy=publishedAt&pageSize=10&apiKey=' + newsKey
+        );
+        if (newsRes2.ok) {
+          var newsData2 = await newsRes2.json();
+          if (newsData2.articles && newsData2.articles.length > 0) {
+            for (var j = 0; j < Math.min(newsData2.articles.length, 10); j++) {
+              var b = newsData2.articles[j];
+              newsText += '- ' + b.title + ' (' + (b.source && b.source.name ? b.source.name : '') + ', ' + (b.publishedAt ? b.publishedAt.slice(0,10) : '') + ')\n';
+              if (b.description) newsText += '  ' + b.description + '\n';
+              if (b.source && b.source.name) sources.push(b.source.name);
+            }
+          }
+        }
+      }
+    } catch(e) {
+      newsText = '';
+    }
+
+    // PASO 2: Groq analiza las noticias reales
+    setStep('🤖 Analizando con IA...');
+
+    var prompt = 'Hoy es ' + todayStr + '. Genera mi briefing de trading para esta sesión.\n\n';
+
+    if (newsText) {
+      prompt += 'Estas son las noticias financieras reales de hoy:\n' + newsText + '\n\nBasándote en estas noticias reales, genera el briefing con esta estructura exacta:\n\n';
+    } else {
+      prompt += 'Usa tu conocimiento actualizado para generar el briefing con esta estructura exacta:\n\n';
+    }
+
+    prompt += '📡 CONTEXTO DE LA SEMANA\n[2-3 frases sobre qué está dominando el mercado esta semana]\n\n⚡ SESIÓN DE HOY\n• Sentimiento: [Risk-on / Risk-off / Mixto]\n• Volatilidad: [Alta / Media / Baja]\n• Sesiones activas: [cuáles están abiertas ahora]\n• Consejo: [un consejo concreto para hoy]\n\n📰 NOTICIAS CLAVE\n\n1. [TÍTULO] — Impacto: [ALTO/MEDIO/BAJO]\n📅 [día de la semana]\n[2 frases explicando qué pasó y por qué importa]\nActivos afectados: [lista con ↑ o ↓ o → y el ticker]\n\n2. [igual]\n3. [igual]\n4. [igual]\n5. [igual]\n\nSé específico con los tickers (SPY, QQQ, BTC, ETH, GLD, DXY, OIL, NVDA, AAPL, EURUSD, USDJPY, etc).';
 
     try {
       var res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer ' + key
+          'Authorization': 'Bearer ' + groqKey
         },
         body: JSON.stringify({
           model: 'llama-3.3-70b-versatile',
           max_tokens: 1500,
           messages: [
-            { role: 'system', content: 'Eres un analista de mercados financieros experto. Escribes briefings de trading claros, directos y útiles. Usas emojis para que sea fácil de leer en móvil.' },
-            { role: 'user', content: PROMPT }
+            { role: 'system', content: 'Eres un analista de mercados financieros experto. Escribes briefings de trading claros, directos y útiles en español. Usas emojis para que sea fácil de leer en móvil.' },
+            { role: 'user', content: prompt }
           ]
         })
       });
@@ -194,12 +265,14 @@
       var raw  = data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content;
       if (!raw) throw new Error('Respuesta vacía');
 
-      renderText(raw);
+      setStep('');
+      renderText(raw, sources);
       btn.textContent = '↺ Actualizar briefing';
       btn.className   = 'done';
       btn.disabled    = false;
 
     } catch(e) {
+      setStep('');
       content.innerHTML = '<div class="error-box">⚠️ ' + e.message + '</div>';
       btn.textContent = '⚡ Reintentar';
       btn.className   = '';
@@ -207,7 +280,7 @@
     }
   }
 
-  function renderText(raw) {
+  function renderText(raw, sources) {
     var lines = raw.split('\n');
     var html  = '<div id="result">';
     for (var i = 0; i < lines.length; i++) {
@@ -223,6 +296,13 @@
       else if (t.indexOf('📅') === 0)       html += '<div class="l-fecha">'   + esc(t) + '</div>';
       else                                  html += '<div class="l-normal">'  + esc(t) + '</div>';
     }
+
+    // Fuentes
+    if (sources && sources.length > 0) {
+      var unique = sources.filter(function(v,i,a){ return a.indexOf(v)===i; }).slice(0,5);
+      html += '<div class="source-tag">📰 Fuentes: ' + esc(unique.join(' · ')) + '</div>';
+    }
+
     html += '</div>';
     document.getElementById('content').innerHTML = html;
   }
