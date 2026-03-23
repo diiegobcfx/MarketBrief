@@ -12,20 +12,16 @@
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { background: #0a0a0f; color: #e8e8f0; font-family: -apple-system, BlinkMacSystemFont, sans-serif; min-height: 100vh; padding: 0 16px 80px; }
   .container { max-width: 480px; margin: 0 auto; }
-
-  /* SETUP */
   #setupScreen { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; text-align: center; padding: 32px 16px; }
   .setup-icon { font-size: 48px; margin-bottom: 20px; }
   .setup-title { font-size: 24px; font-weight: 800; margin-bottom: 8px; }
   .setup-title span { color: #00ff88; }
   .setup-sub { font-size: 13px; color: #5a5a7a; line-height: 1.6; margin-bottom: 24px; max-width: 300px; }
   .setup-label { font-size: 10px; color: #5a5a7a; letter-spacing: 1px; text-transform: uppercase; text-align: left; width: 100%; margin-bottom: 6px; margin-top: 14px; }
-  .setup-input { width: 100%; padding: 14px; background: #111118; border: 1px solid #1e1e2e; border-radius: 12px; color: #e8e8f0; font-size: 13px; font-family: monospace; margin-bottom: 4px; -webkit-appearance: none; outline: none; }
+  .setup-input { width: 100%; padding: 14px; background: #111118; border: 1px solid #1e1e2e; border-radius: 12px; color: #e8e8f0; font-size: 13px; font-family: monospace; -webkit-appearance: none; outline: none; }
   .setup-input:focus { border-color: #00ff88; }
   .setup-btn { width: 100%; padding: 15px; background: #00ff88; color: #000; border: none; border-radius: 13px; font-size: 14px; font-weight: 700; cursor: pointer; -webkit-appearance: none; margin-top: 20px; }
   .setup-note { font-size: 11px; color: #5a5a7a; margin-top: 14px; line-height: 1.6; }
-
-  /* APP */
   #appScreen { display: none; }
   .header { display: flex; justify-content: space-between; align-items: flex-start; padding: 28px 0 16px; }
   .greeting { font-size: 10px; color: #5a5a7a; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 4px; }
@@ -51,8 +47,8 @@
   .empty-icon { font-size: 40px; margin-bottom: 12px; }
   .empty-state p { font-size: 13px; line-height: 1.6; }
   .skel { background: #111118; border: 1px solid #1e1e2e; border-radius: 13px; padding: 14px; margin-bottom: 10px; }
-  .sl { background: #16161f; border-radius: 5px; margin-bottom: 7px; animation: pulse 1.4s infinite; }
-  @keyframes pulse { 0%,100%{opacity:0.4} 50%{opacity:0.8} }
+  .sl { background: #16161f; border-radius: 5px; margin-bottom: 7px; animation: shimmer 1.4s infinite; }
+  @keyframes shimmer { 0%,100%{opacity:0.4} 50%{opacity:0.8} }
   .error-box { background: rgba(255,68,102,0.08); border: 1px solid rgba(255,68,102,0.2); border-radius: 12px; padding: 14px; font-size: 12px; color: #ff4466; line-height: 1.6; word-break: break-word; }
   #result { background: #111118; border: 1px solid #1e1e2e; border-radius: 14px; padding: 16px; }
   .l-empty { height: 8px; }
@@ -73,18 +69,16 @@
 </head>
 <body>
 
-<!-- SETUP -->
 <div id="setupScreen">
   <div class="setup-icon">🔑</div>
   <div class="setup-title">Market<span>Brief</span></div>
-  <p class="setup-sub">Solo necesitas tu API key de Groq. Las noticias se obtienen gratis de Reuters y CNBC.</p>
-  <div class="setup-label">API Key de Groq (IA gratuita)</div>
+  <p class="setup-sub">Solo necesitas tu API key de Groq. Noticias de Google News, El Economista y ForexFactory — gratis y sin registro.</p>
+  <div class="setup-label">API Key de Groq</div>
   <input class="setup-input" type="password" id="groqKey" placeholder="gsk_..." autocomplete="off" autocorrect="off" spellcheck="false" />
   <button class="setup-btn" onclick="saveKey()">Guardar y continuar →</button>
-  <p class="setup-note">Tu key se guarda solo en tu dispositivo · Nunca sale de él<br>Consíguela gratis en console.groq.com</p>
+  <p class="setup-note">Tu key se guarda solo en tu dispositivo<br>Consíguela gratis en console.groq.com</p>
 </div>
 
-<!-- APP -->
 <div id="appScreen">
   <div class="container">
     <div class="header">
@@ -116,7 +110,7 @@
     <div id="content">
       <div class="empty-state">
         <div class="empty-icon">📊</div>
-        <p>Pulsa el botón para recibir tu briefing con noticias reales de Reuters y CNBC analizadas por IA.</p>
+        <p>Pulsa el botón para recibir tu briefing completo: calendario económico + noticias geopolíticas + análisis IA.</p>
       </div>
     </div>
 
@@ -154,22 +148,60 @@
 
   function setStep(msg) { document.getElementById('stepMsg').textContent = msg; }
 
-  var todayStr = now.toLocaleDateString('es-ES', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
+  var todayStr = now.toLocaleDateString('es-ES', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+  var todayISO = now.toISOString().slice(0, 10);
 
-  // RSS feeds financieros via rss2json (permite CORS desde navegador, gratis)
-  var RSS_FEEDS = [
-    { name: 'Reuters Business', url: 'https://feeds.reuters.com/reuters/businessNews' },
-    { name: 'CNBC Markets',     url: 'https://search.cnbc.com/rs/search/combinedcms/view.xml?partnerId=wrss01&id=20910258' },
-    { name: 'Reuters Markets',  url: 'https://feeds.reuters.com/reuters/financialNews' }
+  // Google News RSS — no requieren API key ni tienen CORS
+  var NEWS_FEEDS = [
+    {
+      name: 'Google News — Mercados',
+      url:  'https://news.google.com/rss/search?q=mercados+financieros+bolsa&hl=es&gl=ES&ceid=ES:es'
+    },
+    {
+      name: 'Google News — Geopolítica',
+      url:  'https://news.google.com/rss/search?q=geopolitica+guerra+tensiones+economia&hl=es&gl=ES&ceid=ES:es'
+    },
+    {
+      name: 'Google News — Bancos Centrales',
+      url:  'https://news.google.com/rss/search?q=fed+bce+banco+central+tipos+interes&hl=es&gl=ES&ceid=ES:es'
+    },
+    {
+      name: 'Google News — Energía',
+      url:  'https://news.google.com/rss/search?q=petroleo+energia+opep+gas&hl=es&gl=ES&ceid=ES:es'
+    },
+    {
+      name: 'El Economista',
+      url:  'https://www.eleconomista.es/rss/rss-mercados-cotizaciones.php'
+    }
   ];
 
-  async function fetchRSS(feedUrl) {
-    var proxy = 'https://api.rss2json.com/v1/api.json?rss_url=' + encodeURIComponent(feedUrl) + '&count=5';
-    var res = await fetch(proxy);
-    if (!res.ok) return [];
-    var data = await res.json();
-    if (data.status !== 'ok' || !data.items) return [];
-    return data.items;
+  async function fetchRSS(feed) {
+    var proxy = 'https://api.rss2json.com/v1/api.json?rss_url=' + encodeURIComponent(feed.url) + '&count=5';
+    try {
+      var res = await fetch(proxy);
+      if (!res.ok) return null;
+      var data = await res.json();
+      if (data.status !== 'ok' || !data.items || !data.items.length) return null;
+      return { name: feed.name, items: data.items };
+    } catch(e) {
+      return null;
+    }
+  }
+
+  function impactLabel(impact) {
+    if (impact === 'High')   return '🔴 ALTO';
+    if (impact === 'Medium') return '🟡 MEDIO';
+    return '⚪ BAJO';
+  }
+
+  async function fetchForexFactory() {
+    try {
+      var res = await fetch('https://nfs.faireconomy.media/ff_calendar_thisweek.json?v=' + Date.now());
+      if (!res.ok) return null;
+      return await res.json();
+    } catch(e) {
+      return null;
+    }
   }
 
   async function generate() {
@@ -187,39 +219,91 @@
       '<div class="skel"><div class="sl" style="width:40%;height:10px"></div><div class="sl" style="width:75%;height:15px;margin-top:4px"></div><div class="sl" style="width:90%;height:10px"></div></div>' +
       '<div class="skel"><div class="sl" style="width:35%;height:10px"></div><div class="sl" style="width:80%;height:15px;margin-top:4px"></div><div class="sl" style="width:70%;height:10px"></div></div>';
 
-    var newsText = '';
-    var sources  = [];
+    var calendarText = '';
+    var newsText     = '';
+    var activeSources = [];
 
-    // PASO 1: RSS de Reuters y CNBC
-    setStep('📡 Leyendo Reuters y CNBC...');
-    for (var f = 0; f < RSS_FEEDS.length; f++) {
-      try {
-        var items = await fetchRSS(RSS_FEEDS[f].url);
-        for (var i = 0; i < items.length; i++) {
-          var item = items[i];
-          newsText += '- ' + item.title + ' (' + RSS_FEEDS[f].name + ', ' + (item.pubDate ? item.pubDate.slice(0,10) : '') + ')\n';
-          if (item.description) {
-            var clean = item.description.replace(/<[^>]+>/g, '').slice(0, 150);
-            if (clean) newsText += '  ' + clean + '\n';
-          }
-          sources.push(RSS_FEEDS[f].name);
-        }
-      } catch(e) {
-        // Continuar con el siguiente feed
+    // PASO 1: ForexFactory en paralelo con RSS
+    setStep('📅 Cargando calendario y noticias...');
+
+    var ffPromise   = fetchForexFactory();
+    var rssPromises = NEWS_FEEDS.map(function(f) { return fetchRSS(f); });
+
+    var allResults = await Promise.allSettled([ffPromise].concat(rssPromises));
+
+    // Procesar ForexFactory
+    var ffResult = allResults[0];
+    if (ffResult.status === 'fulfilled' && ffResult.value) {
+      var events = ffResult.value;
+      var todayEvents = events.filter(function(e) { return e.date && e.date.slice(0,10) === todayISO; });
+      var highWeek    = events.filter(function(e) { return e.impact === 'High' && e.date && e.date.slice(0,10) !== todayISO; });
+
+      if (todayEvents.length > 0) {
+        calendarText += '=== EVENTOS HOY (' + todayISO + ') ===\n';
+        todayEvents.forEach(function(e) {
+          calendarText += impactLabel(e.impact) + ' | ' + e.country + ' | ' + e.title;
+          if (e.time)     calendarText += ' | ' + e.time;
+          if (e.forecast) calendarText += ' | Prev: ' + e.forecast;
+          if (e.previous) calendarText += ' | Ant: ' + e.previous;
+          if (e.actual)   calendarText += ' | Real: ' + e.actual;
+          calendarText += '\n';
+        });
+        activeSources.push('ForexFactory');
+      }
+
+      if (highWeek.length > 0) {
+        calendarText += '\n=== ALTO IMPACTO ESTA SEMANA ===\n';
+        highWeek.slice(0, 6).forEach(function(e) {
+          calendarText += '🔴 ' + e.country + ' | ' + e.title + ' | ' + e.date.slice(0,10);
+          if (e.forecast) calendarText += ' | Prev: ' + e.forecast;
+          if (e.previous) calendarText += ' | Ant: ' + e.previous;
+          calendarText += '\n';
+        });
       }
     }
 
-    // PASO 2: Groq analiza
-    setStep('🤖 Analizando con IA...');
-
-    var prompt = 'Hoy es ' + todayStr + '. Genera mi briefing de trading para esta sesión.\n\n';
-    if (newsText) {
-      prompt += 'Noticias reales de Reuters y CNBC de hoy (en inglés, analiza y explica en español):\n' + newsText + '\n\nBasándote en estas noticias, genera el briefing:\n\n';
-    } else {
-      prompt += 'Usa tu conocimiento actualizado:\n\n';
+    // Procesar RSS feeds
+    for (var r = 1; r < allResults.length; r++) {
+      var result = allResults[r];
+      if (result.status === 'fulfilled' && result.value) {
+        var feed = result.value;
+        activeSources.push(feed.name);
+        newsText += '\n--- ' + feed.name.toUpperCase() + ' ---\n';
+        feed.items.slice(0, 4).forEach(function(item) {
+          newsText += '• ' + item.title + '\n';
+          if (item.description) {
+            var clean = item.description.replace(/<[^>]+>/g, '').trim().slice(0, 100);
+            if (clean) newsText += '  ' + clean + '\n';
+          }
+        });
+      }
     }
 
-    prompt += '📡 CONTEXTO DE LA SEMANA\n[2-3 frases sobre qué domina el mercado]\n\n⚡ SESIÓN DE HOY\n• Sentimiento: [Risk-on / Risk-off / Mixto]\n• Volatilidad: [Alta / Media / Baja]\n• Sesiones activas: [cuáles están abiertas ahora]\n• Consejo: [consejo concreto para hoy]\n\n📰 NOTICIAS CLAVE\n\n1. [TÍTULO] — Impacto: [ALTO/MEDIO/BAJO]\n📅 [día]\n[2 frases sobre qué pasó y por qué importa]\nActivos afectados: [↑ o ↓ o → TICKER]\n\n2. [igual]\n3. [igual]\n4. [igual]\n5. [igual]\n\nTickers: SPY, QQQ, BTC, ETH, GLD, DXY, OIL, NVDA, AAPL, EURUSD, USDJPY, etc.';
+    var hasRealData = calendarText.length > 0 || newsText.length > 0;
+
+    // PASO 2: Groq analiza todo
+    setStep('🤖 Analizando con IA...');
+
+    var prompt = 'Hoy es ' + todayStr + '. Genera un briefing de trading completo y profesional.\n\n';
+
+    if (calendarText) {
+      prompt += '=== CALENDARIO ECONÓMICO REAL (ForexFactory) ===\n' + calendarText + '\n';
+    }
+    if (newsText) {
+      prompt += '=== NOTICIAS REALES DE HOY ===\n' + newsText + '\n';
+    }
+    if (!hasRealData) {
+      prompt += 'Usa tu conocimiento actualizado.\n\n';
+    }
+
+    prompt += '\nCon toda esta información, genera el briefing en este formato:\n\n';
+    prompt += '📡 CONTEXTO DE LA SEMANA\n[2-3 frases resumiendo el contexto macro, geopolítico y de mercados]\n\n';
+    prompt += '🌍 GEOPOLÍTICA Y RIESGO\n[2-3 frases sobre tensiones geopolíticas actuales y cómo afectan a los mercados]\n\n';
+    prompt += '⚡ SESIÓN DE HOY\n• Sentimiento: [Risk-on / Risk-off / Mixto]\n• Volatilidad esperada: [Alta / Media / Baja]\n• Sesiones activas: [cuáles están abiertas ahora]\n• Consejo: [consejo concreto basado en los datos de hoy]\n\n';
+    prompt += '📰 EVENTOS Y NOTICIAS CLAVE\n\n';
+    prompt += '1. [TÍTULO] — Impacto: [ALTO/MEDIO/BAJO]\n📅 [hora o día]\n[2 frases sobre qué es, qué se espera y por qué importa al trader]\nActivos afectados: [↑ o ↓ o → TICKER]\n\n';
+    prompt += '2. [igual]\n3. [igual]\n4. [igual]\n5. [igual]\n\n';
+    prompt += 'Tickers exactos: SPY, QQQ, BTC, ETH, GLD, DXY, OIL, NVDA, AAPL, EURUSD, USDJPY, GBPUSD, XAUUSD, etc.';
 
     try {
       var res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
@@ -227,9 +311,12 @@
         headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + groqKey },
         body: JSON.stringify({
           model: 'llama-3.3-70b-versatile',
-          max_tokens: 1500,
+          max_tokens: 2000,
           messages: [
-            { role: 'system', content: 'Eres un analista de mercados financieros experto. Escribes briefings de trading claros y útiles en español. Usas emojis para facilitar la lectura en móvil.' },
+            {
+              role: 'system',
+              content: 'Eres un analista senior de mercados financieros. Produces briefings de trading diarios profesionales, concisos y accionables en español. Combinas datos macro, geopolítica y calendario económico para dar una visión completa del mercado. Cuando tienes datos reales siempre los usas y los referencias.'
+            },
             { role: 'user', content: prompt }
           ]
         })
@@ -245,7 +332,7 @@
       if (!raw) throw new Error('Respuesta vacía');
 
       setStep('');
-      renderText(raw, sources, !!newsText);
+      renderText(raw, activeSources, hasRealData);
       btn.textContent = '↺ Actualizar briefing';
       btn.className   = 'done';
       btn.disabled    = false;
@@ -259,28 +346,28 @@
     }
   }
 
-  function renderText(raw, sources, hasRealNews) {
+  function renderText(raw, sources, hasReal) {
     var lines = raw.split('\n');
     var html  = '<div id="result">';
     for (var i = 0; i < lines.length; i++) {
       var t = lines[i].trim();
       if (!t) { html += '<div class="l-empty"></div>'; continue; }
-      if (/^(📡|⚡|📰)/.test(t))           html += '<div class="l-section">'  + esc(t) + '</div>';
+      if (/^(📡|⚡|📰|🌍)/.test(t))        html += '<div class="l-section">'  + esc(t) + '</div>';
       else if (/^\d+\./.test(t))            html += '<div class="l-noticia">' + esc(t) + '</div>';
       else if (t.indexOf('ALTO')   > -1)    html += '<div class="l-alto">'    + esc(t) + '</div>';
       else if (t.indexOf('MEDIO')  > -1)    html += '<div class="l-medio">'   + esc(t) + '</div>';
       else if (t.indexOf('BAJO')   > -1)    html += '<div class="l-bajo">'    + esc(t) + '</div>';
-      else if (t.indexOf('Activos') === 0)  html += '<div class="l-activos">' + esc(t) + '</div>';
+      else if (t.indexOf('Activos') === 0 || t.indexOf('Previsión') === 0) html += '<div class="l-activos">' + esc(t) + '</div>';
       else if (t.indexOf('•') === 0)        html += '<div class="l-bullet">'  + esc(t) + '</div>';
       else if (t.indexOf('📅') === 0)       html += '<div class="l-fecha">'   + esc(t) + '</div>';
       else                                  html += '<div class="l-normal">'  + esc(t) + '</div>';
     }
 
-    if (hasRealNews) {
+    if (hasReal && sources.length > 0) {
       var unique = sources.filter(function(v,i,a){ return a.indexOf(v)===i; });
-      html += '<div class="source-tag real">✅ Fuentes reales: ' + esc(unique.join(' · ')) + '</div>';
+      html += '<div class="source-tag real">✅ Fuentes: ' + esc(unique.join(' · ')) + '</div>';
     } else {
-      html += '<div class="source-tag">🤖 Generado por IA (sin noticias en tiempo real)</div>';
+      html += '<div class="source-tag">🤖 Generado por IA (fuentes no disponibles)</div>';
     }
 
     html += '</div>';
