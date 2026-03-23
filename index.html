@@ -249,19 +249,20 @@
     // PASO 2: Groq analiza
     setStep('🤖 Analizando con IA...');
 
-    var prompt = 'Hoy es ' + todayStr + '. Genera un briefing de trading completo y profesional.\n\n';
+    var prompt = 'Hoy es ' + todayStr + '. Genera un briefing de trading completo y detallado en español correcto, sin errores ortográficos ni palabras en otros idiomas.\n\n';
     if (calendarText) prompt += '=== CALENDARIO ECONÓMICO REAL (ForexFactory) ===\n' + calendarText + '\n';
     if (newsText)     prompt += '=== NOTICIAS REALES DE HOY ===\n' + newsText + '\n';
     if (!hasReal)     prompt += 'Usa tu conocimiento actualizado.\n\n';
 
-    prompt += '\nGenera el briefing en este formato exacto:\n\n';
-    prompt += '📡 CONTEXTO DE LA SEMANA\n[2-3 frases del contexto macro y geopolítico]\n\n';
-    prompt += '🌍 GEOPOLÍTICA Y RIESGO\n[2-3 frases sobre tensiones actuales y su impacto en mercados]\n\n';
-    prompt += '⚡ SESIÓN DE HOY\n• Sentimiento: [Risk-on / Risk-off / Mixto]\n• Volatilidad esperada: [Alta / Media / Baja]\n• Sesiones activas: [cuáles están abiertas ahora]\n• Consejo: [consejo concreto basado en los datos reales de hoy]\n\n';
+    prompt += '\nIMPORTANTE: No uses asteriscos (**) ni markdown. Escribe en texto plano.\n\n';
+    prompt += 'Genera el briefing en este formato exacto:\n\n';
+    prompt += '📡 CONTEXTO DE LA SEMANA\n[4-5 frases detalladas explicando el contexto macro global: qué factores dominan, cómo están los mercados y qué se espera esta semana]\n\n';
+    prompt += '🌍 GEOPOLÍTICA Y RIESGO\n[4-5 frases sobre tensiones geopolíticas actuales: conflictos, sanciones, relaciones entre potencias y cómo pueden mover los mercados]\n\n';
+    prompt += '⚡ SESIÓN DE HOY\n• Sentimiento: [Risk-on / Risk-off / Mixto — explica brevemente por qué]\n• Volatilidad esperada: [Alta / Media / Baja — explica brevemente por qué]\n• Sesiones activas: [cuáles están abiertas ahora]\n• Consejo del día: [consejo concreto y accionable con razonamiento basado en los eventos de hoy]\n\n';
     prompt += '📰 EVENTOS Y NOTICIAS CLAVE\n\n';
-    prompt += '1. [TÍTULO] — Impacto: [ALTO/MEDIO/BAJO]\n📅 [hora o día]\n[2 frases: qué es, qué se espera y por qué importa]\nActivos afectados: [↑ o ↓ o → TICKER]\n\n';
+    prompt += '1. [TÍTULO SIN ASTERISCOS] — Impacto: [ALTO/MEDIO/BAJO]\n📅 [hora o día]\n[4-5 frases: qué es este dato, qué se espera exactamente, qué pasaría si sale mejor o peor de lo previsto, y por qué importa al trader]\nPrevisión: [dato esperado] | Anterior: [dato anterior si disponible]\nActivos afectados: [↑ o ↓ o → TICKER — razón en una frase]\n\n';
     prompt += '2. [igual]\n3. [igual]\n4. [igual]\n5. [igual]\n\n';
-    prompt += 'Tickers: SPY, QQQ, BTC, ETH, GLD, DXY, OIL, NVDA, AAPL, EURUSD, USDJPY, GBPUSD, XAUUSD, etc.';
+    prompt += 'Escribe todo en español correcto y formal. Sin asteriscos, sin markdown.';
 
     try {
       var groqRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
@@ -271,7 +272,7 @@
           model: 'llama-3.3-70b-versatile',
           max_tokens: 2000,
           messages: [
-            { role: 'system', content: 'Eres un analista senior de mercados financieros. Produces briefings de trading diarios profesionales, concisos y accionables en español. Cuando tienes datos reales del calendario económico y noticias, los usas siempre y los referencías explícitamente.' },
+            { role: 'system', content: 'Eres un analista senior de mercados financieros español. Produces briefings de trading diarios detallados, profesionales y accionables. NUNCA uses asteriscos (**) ni ningún tipo de markdown. Escribe siempre en texto plano y en español correcto sin faltas de ortografía. Cuando tienes datos reales del calendario económico y noticias, los usas y los explicas en profundidad.' },
             { role: 'user', content: prompt }
           ]
         })
@@ -329,6 +330,10 @@
   }
 
   function esc(s) {
+    // Limpiar markdown: asteriscos, guiones bajos
+    s = s.replace(/\*\*(.*?)\*\*/g, '$1');
+    s = s.replace(/\*(.*?)\*/g, '$1');
+    s = s.replace(/__(.*?)__/g, '$1');
     return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   }
 </script>
