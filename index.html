@@ -67,6 +67,7 @@
   .l-fecha { font-size: 11px; font-family: monospace; color: #5a5a7a; margin-bottom: 4px; }
   .l-normal { font-size: 13px; color: #9090b0; line-height: 1.6; margin-bottom: 2px; }
   .source-tag { font-size: 10px; color: #5a5a7a; font-family: monospace; margin-top: 12px; padding-top: 12px; border-top: 1px solid #1e1e2e; line-height: 1.8; }
+  .source-tag.real { color: #00ff88; }
   .reset-btn { font-size: 11px; color: #5a5a7a; background: none; border: none; cursor: pointer; display: block; margin: 16px auto 0; text-decoration: underline; }
 </style>
 </head>
@@ -76,16 +77,11 @@
 <div id="setupScreen">
   <div class="setup-icon">🔑</div>
   <div class="setup-title">Market<span>Brief</span></div>
-  <p class="setup-sub">Introduce tus API keys para activar noticias reales + análisis IA.</p>
-
+  <p class="setup-sub">Solo necesitas tu API key de Groq. Las noticias se obtienen gratis de Reuters y CNBC.</p>
   <div class="setup-label">API Key de Groq (IA gratuita)</div>
   <input class="setup-input" type="password" id="groqKey" placeholder="gsk_..." autocomplete="off" autocorrect="off" spellcheck="false" />
-
-  <div class="setup-label">API Key de GNews (noticias reales)</div>
-  <input class="setup-input" type="password" id="gnewsKey" placeholder="xxxxxxxxxxxxxxxx..." autocomplete="off" autocorrect="off" spellcheck="false" />
-
-  <button class="setup-btn" onclick="saveKeys()">Guardar y continuar →</button>
-  <p class="setup-note">Keys guardadas solo en tu dispositivo · Nunca salen de él<br>Groq: console.groq.com · GNews: gnews.io</p>
+  <button class="setup-btn" onclick="saveKey()">Guardar y continuar →</button>
+  <p class="setup-note">Tu key se guarda solo en tu dispositivo · Nunca sale de él<br>Consíguela gratis en console.groq.com</p>
 </div>
 
 <!-- APP -->
@@ -120,11 +116,11 @@
     <div id="content">
       <div class="empty-state">
         <div class="empty-icon">📊</div>
-        <p>Pulsa el botón para recibir tu briefing con noticias reales de hoy analizadas por IA.</p>
+        <p>Pulsa el botón para recibir tu briefing con noticias reales de Reuters y CNBC analizadas por IA.</p>
       </div>
     </div>
 
-    <button class="reset-btn" onclick="resetKeys()">Cambiar API keys</button>
+    <button class="reset-btn" onclick="resetKey()">Cambiar API key</button>
   </div>
 </div>
 
@@ -133,15 +129,12 @@
   var DAYS   = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
   var now    = new Date();
 
-  if (localStorage.getItem('mb_groq_key') && localStorage.getItem('mb_gnews_key')) showApp();
+  if (localStorage.getItem('mb_groq_key')) showApp();
 
-  function saveKeys() {
-    var gk = document.getElementById('groqKey').value.trim();
-    var nk = document.getElementById('gnewsKey').value.trim();
-    if (!gk || gk.indexOf('gsk_') !== 0) { alert('Key de Groq inválida (debe empezar por gsk_)'); return; }
-    if (!nk || nk.length < 8) { alert('Key de GNews inválida'); return; }
-    localStorage.setItem('mb_groq_key',  gk);
-    localStorage.setItem('mb_gnews_key', nk);
+  function saveKey() {
+    var k = document.getElementById('groqKey').value.trim();
+    if (!k || k.indexOf('gsk_') !== 0) { alert('Key inválida (debe empezar por gsk_)'); return; }
+    localStorage.setItem('mb_groq_key', k);
     showApp();
   }
 
@@ -152,23 +145,36 @@
     document.getElementById('monthStr').textContent = MONTHS[now.getMonth()] + ' ' + DAYS[now.getDay()];
   }
 
-  function resetKeys() {
+  function resetKey() {
     localStorage.removeItem('mb_groq_key');
-    localStorage.removeItem('mb_gnews_key');
     document.getElementById('appScreen').style.display   = 'none';
     document.getElementById('setupScreen').style.display = 'flex';
-    document.getElementById('groqKey').value  = '';
-    document.getElementById('gnewsKey').value = '';
+    document.getElementById('groqKey').value = '';
   }
 
   function setStep(msg) { document.getElementById('stepMsg').textContent = msg; }
 
   var todayStr = now.toLocaleDateString('es-ES', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
 
+  // RSS feeds financieros via rss2json (permite CORS desde navegador, gratis)
+  var RSS_FEEDS = [
+    { name: 'Reuters Business', url: 'https://feeds.reuters.com/reuters/businessNews' },
+    { name: 'CNBC Markets',     url: 'https://search.cnbc.com/rs/search/combinedcms/view.xml?partnerId=wrss01&id=20910258' },
+    { name: 'Reuters Markets',  url: 'https://feeds.reuters.com/reuters/financialNews' }
+  ];
+
+  async function fetchRSS(feedUrl) {
+    var proxy = 'https://api.rss2json.com/v1/api.json?rss_url=' + encodeURIComponent(feedUrl) + '&count=5';
+    var res = await fetch(proxy);
+    if (!res.ok) return [];
+    var data = await res.json();
+    if (data.status !== 'ok' || !data.items) return [];
+    return data.items;
+  }
+
   async function generate() {
-    var groqKey  = localStorage.getItem('mb_groq_key');
-    var gnewsKey = localStorage.getItem('mb_gnews_key');
-    if (!groqKey || !gnewsKey) { resetKeys(); return; }
+    var groqKey = localStorage.getItem('mb_groq_key');
+    if (!groqKey) { resetKey(); return; }
 
     var btn     = document.getElementById('mainBtn');
     var content = document.getElementById('content');
@@ -184,46 +190,36 @@
     var newsText = '';
     var sources  = [];
 
-    try {
-      // PASO 1: GNews — noticias financieras reales
-      setStep('📡 Buscando noticias reales de hoy...');
-
-      // Buscar en inglés (más cobertura financiera)
-      var gUrl = 'https://gnews.io/api/v4/search?q=economy+OR+stocks+OR+bitcoin+OR+federal+reserve+OR+inflation+OR+markets&lang=en&country=us&max=10&sortby=publishedAt&token=' + gnewsKey;
-      var gRes = await fetch(gUrl);
-
-      if (gRes.ok) {
-        var gData = await gRes.json();
-        if (gData.articles && gData.articles.length > 0) {
-          for (var i = 0; i < gData.articles.length; i++) {
-            var a = gData.articles[i];
-            newsText += '- ' + a.title + ' (' + (a.source && a.source.name ? a.source.name : '') + ', ' + (a.publishedAt ? a.publishedAt.slice(0,10) : '') + ')\n';
-            if (a.description) newsText += '  ' + a.description + '\n';
-            if (a.source && a.source.name) sources.push(a.source.name);
+    // PASO 1: RSS de Reuters y CNBC
+    setStep('📡 Leyendo Reuters y CNBC...');
+    for (var f = 0; f < RSS_FEEDS.length; f++) {
+      try {
+        var items = await fetchRSS(RSS_FEEDS[f].url);
+        for (var i = 0; i < items.length; i++) {
+          var item = items[i];
+          newsText += '- ' + item.title + ' (' + RSS_FEEDS[f].name + ', ' + (item.pubDate ? item.pubDate.slice(0,10) : '') + ')\n';
+          if (item.description) {
+            var clean = item.description.replace(/<[^>]+>/g, '').slice(0, 150);
+            if (clean) newsText += '  ' + clean + '\n';
           }
+          sources.push(RSS_FEEDS[f].name);
         }
-      } else {
-        var gErr = await gRes.json();
-        throw new Error('GNews: ' + (gErr.errors ? gErr.errors.join(', ') : 'HTTP ' + gRes.status));
+      } catch(e) {
+        // Continuar con el siguiente feed
       }
-    } catch(e) {
-      // Si GNews falla, continuar sin noticias reales
-      newsText = '';
-      setStep('⚠️ Sin noticias en tiempo real, usando IA...');
-      await new Promise(function(r){ setTimeout(r, 1000); });
     }
 
-    // PASO 2: Groq analiza las noticias
+    // PASO 2: Groq analiza
     setStep('🤖 Analizando con IA...');
 
     var prompt = 'Hoy es ' + todayStr + '. Genera mi briefing de trading para esta sesión.\n\n';
     if (newsText) {
-      prompt += 'Estas son las noticias financieras reales de hoy (en inglés, analízalas y explícalas en español):\n' + newsText + '\n\nBasándote en estas noticias reales, genera el briefing:\n\n';
+      prompt += 'Noticias reales de Reuters y CNBC de hoy (en inglés, analiza y explica en español):\n' + newsText + '\n\nBasándote en estas noticias, genera el briefing:\n\n';
     } else {
-      prompt += 'Usa tu conocimiento actualizado para generar el briefing:\n\n';
+      prompt += 'Usa tu conocimiento actualizado:\n\n';
     }
 
-    prompt += '📡 CONTEXTO DE LA SEMANA\n[2-3 frases sobre qué está dominando el mercado esta semana]\n\n⚡ SESIÓN DE HOY\n• Sentimiento: [Risk-on / Risk-off / Mixto]\n• Volatilidad: [Alta / Media / Baja]\n• Sesiones activas: [cuáles están abiertas ahora]\n• Consejo: [un consejo concreto para hoy]\n\n📰 NOTICIAS CLAVE\n\n1. [TÍTULO] — Impacto: [ALTO/MEDIO/BAJO]\n📅 [día de la semana]\n[2 frases explicando qué pasó y por qué importa]\nActivos afectados: [lista con ↑ o ↓ o → y el ticker]\n\n2. [igual]\n3. [igual]\n4. [igual]\n5. [igual]\n\nSé específico con los tickers (SPY, QQQ, BTC, ETH, GLD, DXY, OIL, NVDA, AAPL, EURUSD, USDJPY, etc).';
+    prompt += '📡 CONTEXTO DE LA SEMANA\n[2-3 frases sobre qué domina el mercado]\n\n⚡ SESIÓN DE HOY\n• Sentimiento: [Risk-on / Risk-off / Mixto]\n• Volatilidad: [Alta / Media / Baja]\n• Sesiones activas: [cuáles están abiertas ahora]\n• Consejo: [consejo concreto para hoy]\n\n📰 NOTICIAS CLAVE\n\n1. [TÍTULO] — Impacto: [ALTO/MEDIO/BAJO]\n📅 [día]\n[2 frases sobre qué pasó y por qué importa]\nActivos afectados: [↑ o ↓ o → TICKER]\n\n2. [igual]\n3. [igual]\n4. [igual]\n5. [igual]\n\nTickers: SPY, QQQ, BTC, ETH, GLD, DXY, OIL, NVDA, AAPL, EURUSD, USDJPY, etc.';
 
     try {
       var res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
@@ -233,7 +229,7 @@
           model: 'llama-3.3-70b-versatile',
           max_tokens: 1500,
           messages: [
-            { role: 'system', content: 'Eres un analista de mercados financieros experto. Escribes briefings de trading claros, directos y útiles en español. Usas emojis para que sea fácil de leer en móvil.' },
+            { role: 'system', content: 'Eres un analista de mercados financieros experto. Escribes briefings de trading claros y útiles en español. Usas emojis para facilitar la lectura en móvil.' },
             { role: 'user', content: prompt }
           ]
         })
@@ -246,7 +242,7 @@
 
       var data = await res.json();
       var raw  = data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content;
-      if (!raw) throw new Error('Respuesta vacía de Groq');
+      if (!raw) throw new Error('Respuesta vacía');
 
       setStep('');
       renderText(raw, sources, !!newsText);
@@ -280,16 +276,14 @@
       else                                  html += '<div class="l-normal">'  + esc(t) + '</div>';
     }
 
-    // Fuentes
-    html += '<div class="source-tag">';
-    if (hasRealNews && sources.length > 0) {
-      var unique = sources.filter(function(v,i,a){ return a.indexOf(v)===i; }).slice(0,6);
-      html += '📰 Fuentes reales: ' + esc(unique.join(' · '));
+    if (hasRealNews) {
+      var unique = sources.filter(function(v,i,a){ return a.indexOf(v)===i; });
+      html += '<div class="source-tag real">✅ Fuentes reales: ' + esc(unique.join(' · ')) + '</div>';
     } else {
-      html += '🤖 Generado por IA (sin noticias en tiempo real)';
+      html += '<div class="source-tag">🤖 Generado por IA (sin noticias en tiempo real)</div>';
     }
-    html += '</div></div>';
 
+    html += '</div>';
     document.getElementById('content').innerHTML = html;
   }
 
