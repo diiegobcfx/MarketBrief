@@ -72,7 +72,7 @@
 <div id="setupScreen">
   <div class="setup-icon">🔑</div>
   <div class="setup-title">Market<span>Brief</span></div>
-  <p class="setup-sub">Solo necesitas tu API key de Groq. Noticias de Google News, El Economista y ForexFactory — gratis y sin registro.</p>
+  <p class="setup-sub">Solo necesitas tu API key de Groq. Noticias de ForexFactory, Google News y El Economista en tiempo real.</p>
   <div class="setup-label">API Key de Groq</div>
   <input class="setup-input" type="password" id="groqKey" placeholder="gsk_..." autocomplete="off" autocorrect="off" spellcheck="false" />
   <button class="setup-btn" onclick="saveKey()">Guardar y continuar →</button>
@@ -110,7 +110,7 @@
     <div id="content">
       <div class="empty-state">
         <div class="empty-icon">📊</div>
-        <p>Pulsa el botón para recibir tu briefing completo: calendario económico + noticias geopolíticas + análisis IA.</p>
+        <p>Pulsa el botón para recibir tu briefing completo: calendario económico + geopolítica + análisis IA.</p>
       </div>
     </div>
 
@@ -119,9 +119,12 @@
 </div>
 
 <script>
+  var PROXY = 'https://marketbrief-proxy.dburgos122002.workers.dev';
   var MONTHS = ['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV','DIC'];
   var DAYS   = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
   var now    = new Date();
+  var todayISO = now.toISOString().slice(0,10);
+  var todayStr = now.toLocaleDateString('es-ES', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
 
   if (localStorage.getItem('mb_groq_key')) showApp();
 
@@ -148,61 +151,18 @@
 
   function setStep(msg) { document.getElementById('stepMsg').textContent = msg; }
 
-  var todayStr = now.toLocaleDateString('es-ES', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
-  var todayISO = now.toISOString().slice(0, 10);
-
-  // Google News RSS — no requieren API key ni tienen CORS
-  var NEWS_FEEDS = [
-    {
-      name: 'Google News — Mercados',
-      url:  'https://news.google.com/rss/search?q=mercados+financieros+bolsa&hl=es&gl=ES&ceid=ES:es'
-    },
-    {
-      name: 'Google News — Geopolítica',
-      url:  'https://news.google.com/rss/search?q=geopolitica+guerra+tensiones+economia&hl=es&gl=ES&ceid=ES:es'
-    },
-    {
-      name: 'Google News — Bancos Centrales',
-      url:  'https://news.google.com/rss/search?q=fed+bce+banco+central+tipos+interes&hl=es&gl=ES&ceid=ES:es'
-    },
-    {
-      name: 'Google News — Energía',
-      url:  'https://news.google.com/rss/search?q=petroleo+energia+opep+gas&hl=es&gl=ES&ceid=ES:es'
-    },
-    {
-      name: 'El Economista',
-      url:  'https://www.eleconomista.es/rss/rss-mercados-cotizaciones.php'
-    }
-  ];
-
-  async function fetchRSS(feed) {
-    var proxy = 'https://api.rss2json.com/v1/api.json?rss_url=' + encodeURIComponent(feed.url) + '&count=5';
-    try {
-      var res = await fetch(proxy);
-      if (!res.ok) return null;
-      var data = await res.json();
-      if (data.status !== 'ok' || !data.items || !data.items.length) return null;
-      return { name: feed.name, items: data.items };
-    } catch(e) {
-      return null;
-    }
-  }
-
-  function impactLabel(impact) {
-    if (impact === 'High')   return '🔴 ALTO';
-    if (impact === 'Medium') return '🟡 MEDIO';
+  function impactLabel(i) {
+    if (i === 'High')   return '🔴 ALTO';
+    if (i === 'Medium') return '🟡 MEDIO';
     return '⚪ BAJO';
   }
 
-  async function fetchForexFactory() {
-    try {
-      var res = await fetch('https://nfs.faireconomy.media/ff_calendar_thisweek.json?v=' + Date.now());
-      if (!res.ok) return null;
-      return await res.json();
-    } catch(e) {
-      return null;
-    }
-  }
+  var NEWS_TOPICS = [
+    { topic: 'mercados financieros bolsa economia',   label: 'Google News Mercados' },
+    { topic: 'geopolitica guerra conflicto economia', label: 'Google News Geopolítica' },
+    { topic: 'fed bce banco central tipos interes',   label: 'Google News Bancos Centrales' },
+    { topic: 'petroleo opep energia materias primas', label: 'Google News Energía' }
+  ];
 
   async function generate() {
     var groqKey = localStorage.getItem('mb_groq_key');
@@ -223,116 +183,111 @@
     var newsText     = '';
     var activeSources = [];
 
-    // PASO 1: ForexFactory en paralelo con RSS
+    // PASO 1: Datos en paralelo via Worker
     setStep('📅 Cargando calendario y noticias...');
 
-    var ffPromise   = fetchForexFactory();
-    var rssPromises = NEWS_FEEDS.map(function(f) { return fetchRSS(f); });
+    var requests = [
+      fetch(PROXY + '?type=calendar').then(function(r){ return r.json(); }).catch(function(){ return null; })
+    ];
+    NEWS_TOPICS.forEach(function(t) {
+      requests.push(
+        fetch(PROXY + '?type=news&topic=' + encodeURIComponent(t.topic))
+          .then(function(r){ return r.json(); })
+          .then(function(d){ return { label: t.label, data: d }; })
+          .catch(function(){ return null; })
+      );
+    });
 
-    var allResults = await Promise.allSettled([ffPromise].concat(rssPromises));
+    var results = await Promise.allSettled(requests);
 
-    // Procesar ForexFactory
-    var ffResult = allResults[0];
-    if (ffResult.status === 'fulfilled' && ffResult.value) {
-      var events = ffResult.value;
-      var todayEvents = events.filter(function(e) { return e.date && e.date.slice(0,10) === todayISO; });
-      var highWeek    = events.filter(function(e) { return e.impact === 'High' && e.date && e.date.slice(0,10) !== todayISO; });
+    // Procesar calendario ForexFactory
+    var calRes = results[0];
+    if (calRes.status === 'fulfilled' && calRes.value && !calRes.value.error) {
+      var events = calRes.value;
+      var todayEv = events.filter(function(e){ return e.date && e.date.slice(0,10) === todayISO; });
+      var highWeek = events.filter(function(e){ return e.impact === 'High' && e.date && e.date.slice(0,10) !== todayISO; });
 
-      if (todayEvents.length > 0) {
+      if (todayEv.length > 0) {
+        activeSources.push('ForexFactory');
         calendarText += '=== EVENTOS HOY (' + todayISO + ') ===\n';
-        todayEvents.forEach(function(e) {
+        todayEv.forEach(function(e) {
           calendarText += impactLabel(e.impact) + ' | ' + e.country + ' | ' + e.title;
           if (e.time)     calendarText += ' | ' + e.time;
           if (e.forecast) calendarText += ' | Prev: ' + e.forecast;
-          if (e.previous) calendarText += ' | Ant: ' + e.previous;
-          if (e.actual)   calendarText += ' | Real: ' + e.actual;
+          if (e.previous) calendarText += ' | Ant: '  + e.previous;
+          if (e.actual)   calendarText += ' | Real: '  + e.actual;
           calendarText += '\n';
         });
-        activeSources.push('ForexFactory');
       }
-
       if (highWeek.length > 0) {
         calendarText += '\n=== ALTO IMPACTO ESTA SEMANA ===\n';
-        highWeek.slice(0, 6).forEach(function(e) {
+        highWeek.slice(0,6).forEach(function(e) {
           calendarText += '🔴 ' + e.country + ' | ' + e.title + ' | ' + e.date.slice(0,10);
           if (e.forecast) calendarText += ' | Prev: ' + e.forecast;
-          if (e.previous) calendarText += ' | Ant: ' + e.previous;
+          if (e.previous) calendarText += ' | Ant: '  + e.previous;
           calendarText += '\n';
         });
       }
     }
 
-    // Procesar RSS feeds
-    for (var r = 1; r < allResults.length; r++) {
-      var result = allResults[r];
-      if (result.status === 'fulfilled' && result.value) {
-        var feed = result.value;
-        activeSources.push(feed.name);
-        newsText += '\n--- ' + feed.name.toUpperCase() + ' ---\n';
-        feed.items.slice(0, 4).forEach(function(item) {
+    // Procesar noticias RSS
+    for (var r = 1; r < results.length; r++) {
+      var res = results[r];
+      if (res.status === 'fulfilled' && res.value && res.value.data && res.value.data.items && res.value.data.items.length) {
+        var feed = res.value;
+        activeSources.push(feed.label);
+        newsText += '\n--- ' + feed.label.toUpperCase() + ' ---\n';
+        feed.data.items.forEach(function(item) {
           newsText += '• ' + item.title + '\n';
-          if (item.description) {
-            var clean = item.description.replace(/<[^>]+>/g, '').trim().slice(0, 100);
-            if (clean) newsText += '  ' + clean + '\n';
-          }
+          if (item.description) newsText += '  ' + item.description + '\n';
         });
       }
     }
 
-    var hasRealData = calendarText.length > 0 || newsText.length > 0;
+    var hasReal = calendarText.length > 0 || newsText.length > 0;
 
-    // PASO 2: Groq analiza todo
+    // PASO 2: Groq analiza
     setStep('🤖 Analizando con IA...');
 
     var prompt = 'Hoy es ' + todayStr + '. Genera un briefing de trading completo y profesional.\n\n';
+    if (calendarText) prompt += '=== CALENDARIO ECONÓMICO REAL (ForexFactory) ===\n' + calendarText + '\n';
+    if (newsText)     prompt += '=== NOTICIAS REALES DE HOY ===\n' + newsText + '\n';
+    if (!hasReal)     prompt += 'Usa tu conocimiento actualizado.\n\n';
 
-    if (calendarText) {
-      prompt += '=== CALENDARIO ECONÓMICO REAL (ForexFactory) ===\n' + calendarText + '\n';
-    }
-    if (newsText) {
-      prompt += '=== NOTICIAS REALES DE HOY ===\n' + newsText + '\n';
-    }
-    if (!hasRealData) {
-      prompt += 'Usa tu conocimiento actualizado.\n\n';
-    }
-
-    prompt += '\nCon toda esta información, genera el briefing en este formato:\n\n';
-    prompt += '📡 CONTEXTO DE LA SEMANA\n[2-3 frases resumiendo el contexto macro, geopolítico y de mercados]\n\n';
-    prompt += '🌍 GEOPOLÍTICA Y RIESGO\n[2-3 frases sobre tensiones geopolíticas actuales y cómo afectan a los mercados]\n\n';
-    prompt += '⚡ SESIÓN DE HOY\n• Sentimiento: [Risk-on / Risk-off / Mixto]\n• Volatilidad esperada: [Alta / Media / Baja]\n• Sesiones activas: [cuáles están abiertas ahora]\n• Consejo: [consejo concreto basado en los datos de hoy]\n\n';
+    prompt += '\nGenera el briefing en este formato exacto:\n\n';
+    prompt += '📡 CONTEXTO DE LA SEMANA\n[2-3 frases del contexto macro y geopolítico]\n\n';
+    prompt += '🌍 GEOPOLÍTICA Y RIESGO\n[2-3 frases sobre tensiones actuales y su impacto en mercados]\n\n';
+    prompt += '⚡ SESIÓN DE HOY\n• Sentimiento: [Risk-on / Risk-off / Mixto]\n• Volatilidad esperada: [Alta / Media / Baja]\n• Sesiones activas: [cuáles están abiertas ahora]\n• Consejo: [consejo concreto basado en los datos reales de hoy]\n\n';
     prompt += '📰 EVENTOS Y NOTICIAS CLAVE\n\n';
-    prompt += '1. [TÍTULO] — Impacto: [ALTO/MEDIO/BAJO]\n📅 [hora o día]\n[2 frases sobre qué es, qué se espera y por qué importa al trader]\nActivos afectados: [↑ o ↓ o → TICKER]\n\n';
+    prompt += '1. [TÍTULO] — Impacto: [ALTO/MEDIO/BAJO]\n📅 [hora o día]\n[2 frases: qué es, qué se espera y por qué importa]\nActivos afectados: [↑ o ↓ o → TICKER]\n\n';
     prompt += '2. [igual]\n3. [igual]\n4. [igual]\n5. [igual]\n\n';
-    prompt += 'Tickers exactos: SPY, QQQ, BTC, ETH, GLD, DXY, OIL, NVDA, AAPL, EURUSD, USDJPY, GBPUSD, XAUUSD, etc.';
+    prompt += 'Tickers: SPY, QQQ, BTC, ETH, GLD, DXY, OIL, NVDA, AAPL, EURUSD, USDJPY, GBPUSD, XAUUSD, etc.';
 
     try {
-      var res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      var groqRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + groqKey },
         body: JSON.stringify({
           model: 'llama-3.3-70b-versatile',
           max_tokens: 2000,
           messages: [
-            {
-              role: 'system',
-              content: 'Eres un analista senior de mercados financieros. Produces briefings de trading diarios profesionales, concisos y accionables en español. Combinas datos macro, geopolítica y calendario económico para dar una visión completa del mercado. Cuando tienes datos reales siempre los usas y los referencias.'
-            },
+            { role: 'system', content: 'Eres un analista senior de mercados financieros. Produces briefings de trading diarios profesionales, concisos y accionables en español. Cuando tienes datos reales del calendario económico y noticias, los usas siempre y los referencías explícitamente.' },
             { role: 'user', content: prompt }
           ]
         })
       });
 
-      if (!res.ok) {
-        var err = await res.json();
-        throw new Error(err.error && err.error.message ? err.error.message : 'Groq HTTP ' + res.status);
+      if (!groqRes.ok) {
+        var err = await groqRes.json();
+        throw new Error(err.error && err.error.message ? err.error.message : 'Groq HTTP ' + groqRes.status);
       }
 
-      var data = await res.json();
+      var data = await groqRes.json();
       var raw  = data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content;
       if (!raw) throw new Error('Respuesta vacía');
 
       setStep('');
-      renderText(raw, activeSources, hasRealData);
+      renderText(raw, activeSources, hasReal);
       btn.textContent = '↺ Actualizar briefing';
       btn.className   = 'done';
       btn.disabled    = false;
@@ -352,24 +307,23 @@
     for (var i = 0; i < lines.length; i++) {
       var t = lines[i].trim();
       if (!t) { html += '<div class="l-empty"></div>'; continue; }
-      if (/^(📡|⚡|📰|🌍)/.test(t))        html += '<div class="l-section">'  + esc(t) + '</div>';
-      else if (/^\d+\./.test(t))            html += '<div class="l-noticia">' + esc(t) + '</div>';
-      else if (t.indexOf('ALTO')   > -1)    html += '<div class="l-alto">'    + esc(t) + '</div>';
-      else if (t.indexOf('MEDIO')  > -1)    html += '<div class="l-medio">'   + esc(t) + '</div>';
-      else if (t.indexOf('BAJO')   > -1)    html += '<div class="l-bajo">'    + esc(t) + '</div>';
-      else if (t.indexOf('Activos') === 0 || t.indexOf('Previsión') === 0) html += '<div class="l-activos">' + esc(t) + '</div>';
-      else if (t.indexOf('•') === 0)        html += '<div class="l-bullet">'  + esc(t) + '</div>';
-      else if (t.indexOf('📅') === 0)       html += '<div class="l-fecha">'   + esc(t) + '</div>';
-      else                                  html += '<div class="l-normal">'  + esc(t) + '</div>';
+      if (/^(📡|⚡|📰|🌍)/.test(t))         html += '<div class="l-section">'  + esc(t) + '</div>';
+      else if (/^\d+\./.test(t))             html += '<div class="l-noticia">' + esc(t) + '</div>';
+      else if (t.indexOf('ALTO')   > -1)     html += '<div class="l-alto">'    + esc(t) + '</div>';
+      else if (t.indexOf('MEDIO')  > -1)     html += '<div class="l-medio">'   + esc(t) + '</div>';
+      else if (t.indexOf('BAJO')   > -1)     html += '<div class="l-bajo">'    + esc(t) + '</div>';
+      else if (t.indexOf('Activos') === 0 ||
+               t.indexOf('Previsión') === 0) html += '<div class="l-activos">' + esc(t) + '</div>';
+      else if (t.indexOf('•') === 0)         html += '<div class="l-bullet">'  + esc(t) + '</div>';
+      else if (t.indexOf('📅') === 0)        html += '<div class="l-fecha">'   + esc(t) + '</div>';
+      else                                   html += '<div class="l-normal">'  + esc(t) + '</div>';
     }
-
     if (hasReal && sources.length > 0) {
       var unique = sources.filter(function(v,i,a){ return a.indexOf(v)===i; });
       html += '<div class="source-tag real">✅ Fuentes: ' + esc(unique.join(' · ')) + '</div>';
     } else {
       html += '<div class="source-tag">🤖 Generado por IA (fuentes no disponibles)</div>';
     }
-
     html += '</div>';
     document.getElementById('content').innerHTML = html;
   }
