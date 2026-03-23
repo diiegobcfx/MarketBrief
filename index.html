@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="MarketBrief">
@@ -42,10 +43,10 @@
   .tval { font-size: 10px; font-family: monospace; padding: 2px 5px; border-radius: 4px; }
   .tup { color: #00ff88; background: rgba(0,255,136,0.1); }
   .tdn { color: #ff4466; background: rgba(255,68,102,0.1); }
-  #mainBtn { width: 100%; padding: 15px; background: #00ff88; color: #000; border: none; border-radius: 13px; font-size: 14px; font-weight: 700; cursor: pointer; margin-bottom: 16px; -webkit-appearance: none; }
+  #mainBtn { width: 100%; padding: 15px; background: #00ff88; color: #000; border: none; border-radius: 13px; font-size: 14px; font-weight: 700; cursor: pointer; margin-bottom: 6px; -webkit-appearance: none; }
   #mainBtn:disabled { opacity: 0.6; }
   #mainBtn.done { background: transparent; color: #00ff88; border: 1px solid #1e1e2e; }
-  .step-indicator { font-size: 11px; color: #5a5a7a; text-align: center; margin-bottom: 10px; font-family: monospace; }
+  .step-indicator { font-size: 11px; color: #5a5a7a; text-align: center; margin-bottom: 10px; font-family: monospace; min-height: 16px; }
   .empty-state { text-align: center; padding: 40px 20px; color: #5a5a7a; }
   .empty-icon { font-size: 40px; margin-bottom: 12px; }
   .empty-state p { font-size: 13px; line-height: 1.6; }
@@ -65,7 +66,7 @@
   .l-bullet { font-size: 13px; color: #c0c0d8; padding: 3px 0; line-height: 1.5; }
   .l-fecha { font-size: 11px; font-family: monospace; color: #5a5a7a; margin-bottom: 4px; }
   .l-normal { font-size: 13px; color: #9090b0; line-height: 1.6; margin-bottom: 2px; }
-  .source-tag { font-size: 10px; color: #5a5a7a; font-family: monospace; margin-top: 12px; padding-top: 12px; border-top: 1px solid #1e1e2e; }
+  .source-tag { font-size: 10px; color: #5a5a7a; font-family: monospace; margin-top: 12px; padding-top: 12px; border-top: 1px solid #1e1e2e; line-height: 1.8; }
   .reset-btn { font-size: 11px; color: #5a5a7a; background: none; border: none; cursor: pointer; display: block; margin: 16px auto 0; text-decoration: underline; }
 </style>
 </head>
@@ -75,16 +76,16 @@
 <div id="setupScreen">
   <div class="setup-icon">🔑</div>
   <div class="setup-title">Market<span>Brief</span></div>
-  <p class="setup-sub">Introduce tus API keys para activar noticias reales en tiempo real + análisis IA.</p>
+  <p class="setup-sub">Introduce tus API keys para activar noticias reales + análisis IA.</p>
 
-  <div class="setup-label">API Key de Groq (IA)</div>
+  <div class="setup-label">API Key de Groq (IA gratuita)</div>
   <input class="setup-input" type="password" id="groqKey" placeholder="gsk_..." autocomplete="off" autocorrect="off" spellcheck="false" />
 
-  <div class="setup-label">API Key de NewsAPI (noticias reales)</div>
-  <input class="setup-input" type="password" id="newsKey" placeholder="xxxxxxxxxxxxxxxx..." autocomplete="off" autocorrect="off" spellcheck="false" />
+  <div class="setup-label">API Key de GNews (noticias reales)</div>
+  <input class="setup-input" type="password" id="gnewsKey" placeholder="xxxxxxxxxxxxxxxx..." autocomplete="off" autocorrect="off" spellcheck="false" />
 
   <button class="setup-btn" onclick="saveKeys()">Guardar y continuar →</button>
-  <p class="setup-note">Tus keys se guardan solo en tu dispositivo y nunca salen de él.<br>Groq: console.groq.com · NewsAPI: newsapi.org</p>
+  <p class="setup-note">Keys guardadas solo en tu dispositivo · Nunca salen de él<br>Groq: console.groq.com · GNews: gnews.io</p>
 </div>
 
 <!-- APP -->
@@ -132,44 +133,42 @@
   var DAYS   = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
   var now    = new Date();
 
-  if (localStorage.getItem('mb_groq_key') && localStorage.getItem('mb_news_key')) showApp();
+  if (localStorage.getItem('mb_groq_key') && localStorage.getItem('mb_gnews_key')) showApp();
 
   function saveKeys() {
     var gk = document.getElementById('groqKey').value.trim();
-    var nk = document.getElementById('newsKey').value.trim();
+    var nk = document.getElementById('gnewsKey').value.trim();
     if (!gk || gk.indexOf('gsk_') !== 0) { alert('Key de Groq inválida (debe empezar por gsk_)'); return; }
-    if (!nk || nk.length < 10) { alert('Key de NewsAPI inválida'); return; }
-    localStorage.setItem('mb_groq_key', gk);
-    localStorage.setItem('mb_news_key', nk);
+    if (!nk || nk.length < 8) { alert('Key de GNews inválida'); return; }
+    localStorage.setItem('mb_groq_key',  gk);
+    localStorage.setItem('mb_gnews_key', nk);
     showApp();
   }
 
   function showApp() {
     document.getElementById('setupScreen').style.display = 'none';
     document.getElementById('appScreen').style.display   = 'block';
-    document.getElementById('dayNum').textContent  = now.getDate();
+    document.getElementById('dayNum').textContent   = now.getDate();
     document.getElementById('monthStr').textContent = MONTHS[now.getMonth()] + ' ' + DAYS[now.getDay()];
   }
 
   function resetKeys() {
     localStorage.removeItem('mb_groq_key');
-    localStorage.removeItem('mb_news_key');
+    localStorage.removeItem('mb_gnews_key');
     document.getElementById('appScreen').style.display   = 'none';
     document.getElementById('setupScreen').style.display = 'flex';
-    document.getElementById('groqKey').value = '';
-    document.getElementById('newsKey').value = '';
+    document.getElementById('groqKey').value  = '';
+    document.getElementById('gnewsKey').value = '';
   }
 
-  function setStep(msg) {
-    document.getElementById('stepMsg').textContent = msg;
-  }
+  function setStep(msg) { document.getElementById('stepMsg').textContent = msg; }
 
   var todayStr = now.toLocaleDateString('es-ES', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
 
   async function generate() {
-    var groqKey = localStorage.getItem('mb_groq_key');
-    var newsKey = localStorage.getItem('mb_news_key');
-    if (!groqKey || !newsKey) { resetKeys(); return; }
+    var groqKey  = localStorage.getItem('mb_groq_key');
+    var gnewsKey = localStorage.getItem('mb_gnews_key');
+    if (!groqKey || !gnewsKey) { resetKeys(); return; }
 
     var btn     = document.getElementById('mainBtn');
     var content = document.getElementById('content');
@@ -177,7 +176,6 @@
     btn.disabled    = true;
     btn.className   = '';
     btn.textContent = '⏳ Cargando...';
-
     content.innerHTML =
       '<div class="skel"><div class="sl" style="width:30%;height:10px"></div><div class="sl" style="width:85%;height:15px;margin-top:4px"></div><div class="sl" style="width:95%;height:10px"></div></div>' +
       '<div class="skel"><div class="sl" style="width:40%;height:10px"></div><div class="sl" style="width:75%;height:15px;margin-top:4px"></div><div class="sl" style="width:90%;height:10px"></div></div>' +
@@ -187,54 +185,42 @@
     var sources  = [];
 
     try {
-      // PASO 1: Obtener noticias reales de NewsAPI
-      setStep('📡 Buscando noticias financieras de hoy...');
-      var newsRes = await fetch(
-        'https://newsapi.org/v2/everything?q=economy+OR+stocks+OR+bitcoin+OR+forex+OR+federal+reserve+OR+inflation&language=es&sortBy=publishedAt&pageSize=10&apiKey=' + newsKey
-      );
+      // PASO 1: GNews — noticias financieras reales
+      setStep('📡 Buscando noticias reales de hoy...');
 
-      if (newsRes.ok) {
-        var newsData = await newsRes.json();
-        if (newsData.articles && newsData.articles.length > 0) {
-          for (var i = 0; i < Math.min(newsData.articles.length, 10); i++) {
-            var a = newsData.articles[i];
+      // Buscar en inglés (más cobertura financiera)
+      var gUrl = 'https://gnews.io/api/v4/search?q=economy+OR+stocks+OR+bitcoin+OR+federal+reserve+OR+inflation+OR+markets&lang=en&country=us&max=10&sortby=publishedAt&token=' + gnewsKey;
+      var gRes = await fetch(gUrl);
+
+      if (gRes.ok) {
+        var gData = await gRes.json();
+        if (gData.articles && gData.articles.length > 0) {
+          for (var i = 0; i < gData.articles.length; i++) {
+            var a = gData.articles[i];
             newsText += '- ' + a.title + ' (' + (a.source && a.source.name ? a.source.name : '') + ', ' + (a.publishedAt ? a.publishedAt.slice(0,10) : '') + ')\n';
             if (a.description) newsText += '  ' + a.description + '\n';
             if (a.source && a.source.name) sources.push(a.source.name);
           }
         }
-      }
-
-      // Si no hay noticias en español, buscar en inglés
-      if (!newsText) {
-        var newsRes2 = await fetch(
-          'https://newsapi.org/v2/everything?q=stocks+OR+bitcoin+OR+federal+reserve+OR+inflation+OR+market&language=en&sortBy=publishedAt&pageSize=10&apiKey=' + newsKey
-        );
-        if (newsRes2.ok) {
-          var newsData2 = await newsRes2.json();
-          if (newsData2.articles && newsData2.articles.length > 0) {
-            for (var j = 0; j < Math.min(newsData2.articles.length, 10); j++) {
-              var b = newsData2.articles[j];
-              newsText += '- ' + b.title + ' (' + (b.source && b.source.name ? b.source.name : '') + ', ' + (b.publishedAt ? b.publishedAt.slice(0,10) : '') + ')\n';
-              if (b.description) newsText += '  ' + b.description + '\n';
-              if (b.source && b.source.name) sources.push(b.source.name);
-            }
-          }
-        }
+      } else {
+        var gErr = await gRes.json();
+        throw new Error('GNews: ' + (gErr.errors ? gErr.errors.join(', ') : 'HTTP ' + gRes.status));
       }
     } catch(e) {
+      // Si GNews falla, continuar sin noticias reales
       newsText = '';
+      setStep('⚠️ Sin noticias en tiempo real, usando IA...');
+      await new Promise(function(r){ setTimeout(r, 1000); });
     }
 
-    // PASO 2: Groq analiza las noticias reales
+    // PASO 2: Groq analiza las noticias
     setStep('🤖 Analizando con IA...');
 
     var prompt = 'Hoy es ' + todayStr + '. Genera mi briefing de trading para esta sesión.\n\n';
-
     if (newsText) {
-      prompt += 'Estas son las noticias financieras reales de hoy:\n' + newsText + '\n\nBasándote en estas noticias reales, genera el briefing con esta estructura exacta:\n\n';
+      prompt += 'Estas son las noticias financieras reales de hoy (en inglés, analízalas y explícalas en español):\n' + newsText + '\n\nBasándote en estas noticias reales, genera el briefing:\n\n';
     } else {
-      prompt += 'Usa tu conocimiento actualizado para generar el briefing con esta estructura exacta:\n\n';
+      prompt += 'Usa tu conocimiento actualizado para generar el briefing:\n\n';
     }
 
     prompt += '📡 CONTEXTO DE LA SEMANA\n[2-3 frases sobre qué está dominando el mercado esta semana]\n\n⚡ SESIÓN DE HOY\n• Sentimiento: [Risk-on / Risk-off / Mixto]\n• Volatilidad: [Alta / Media / Baja]\n• Sesiones activas: [cuáles están abiertas ahora]\n• Consejo: [un consejo concreto para hoy]\n\n📰 NOTICIAS CLAVE\n\n1. [TÍTULO] — Impacto: [ALTO/MEDIO/BAJO]\n📅 [día de la semana]\n[2 frases explicando qué pasó y por qué importa]\nActivos afectados: [lista con ↑ o ↓ o → y el ticker]\n\n2. [igual]\n3. [igual]\n4. [igual]\n5. [igual]\n\nSé específico con los tickers (SPY, QQQ, BTC, ETH, GLD, DXY, OIL, NVDA, AAPL, EURUSD, USDJPY, etc).';
@@ -242,10 +228,7 @@
     try {
       var res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer ' + groqKey
-        },
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + groqKey },
         body: JSON.stringify({
           model: 'llama-3.3-70b-versatile',
           max_tokens: 1500,
@@ -258,15 +241,15 @@
 
       if (!res.ok) {
         var err = await res.json();
-        throw new Error(err.error && err.error.message ? err.error.message : 'HTTP ' + res.status);
+        throw new Error(err.error && err.error.message ? err.error.message : 'Groq HTTP ' + res.status);
       }
 
       var data = await res.json();
       var raw  = data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content;
-      if (!raw) throw new Error('Respuesta vacía');
+      if (!raw) throw new Error('Respuesta vacía de Groq');
 
       setStep('');
-      renderText(raw, sources);
+      renderText(raw, sources, !!newsText);
       btn.textContent = '↺ Actualizar briefing';
       btn.className   = 'done';
       btn.disabled    = false;
@@ -280,7 +263,7 @@
     }
   }
 
-  function renderText(raw, sources) {
+  function renderText(raw, sources, hasRealNews) {
     var lines = raw.split('\n');
     var html  = '<div id="result">';
     for (var i = 0; i < lines.length; i++) {
@@ -298,12 +281,15 @@
     }
 
     // Fuentes
-    if (sources && sources.length > 0) {
-      var unique = sources.filter(function(v,i,a){ return a.indexOf(v)===i; }).slice(0,5);
-      html += '<div class="source-tag">📰 Fuentes: ' + esc(unique.join(' · ')) + '</div>';
+    html += '<div class="source-tag">';
+    if (hasRealNews && sources.length > 0) {
+      var unique = sources.filter(function(v,i,a){ return a.indexOf(v)===i; }).slice(0,6);
+      html += '📰 Fuentes reales: ' + esc(unique.join(' · '));
+    } else {
+      html += '🤖 Generado por IA (sin noticias en tiempo real)';
     }
+    html += '</div></div>';
 
-    html += '</div>';
     document.getElementById('content').innerHTML = html;
   }
 
