@@ -10,13 +10,13 @@
 <title>MarketBrief</title>
 <style>
   :root {
-    --bg: #0a0a0f; --surface: #111118; --surface2: #16161f;
-    --border: #1e1e2e; --text: #e8e8f0; --muted: #5a5a7a; --sub: #9090b0;
-    --accent: #00ff88; --down: #ff4466; --warn: #ffaa00;
+    --bg:#0a0a0f; --surface:#111118; --surface2:#16161f;
+    --border:#1e1e2e; --text:#e8e8f0; --muted:#5a5a7a; --sub:#9090b0;
+    --accent:#00ff88; --down:#ff4466; --warn:#ffaa00;
   }
   body.light {
-    --bg: #f4f4f8; --surface: #ffffff; --surface2: #eeeef4;
-    --border: #dddde8; --text: #111118; --muted: #8888aa; --sub: #555570;
+    --bg:#f4f4f8; --surface:#ffffff; --surface2:#eeeef4;
+    --border:#dddde8; --text:#111118; --muted:#8888aa; --sub:#555570;
   }
   * { margin:0; padding:0; box-sizing:border-box; }
   body { background:var(--bg); color:var(--text); font-family:-apple-system,BlinkMacSystemFont,sans-serif; min-height:100vh; padding:0 16px 100px; transition:background 0.3s,color 0.3s; }
@@ -28,47 +28,62 @@
   .setup-title { font-size:24px; font-weight:800; margin-bottom:8px; }
   .setup-title span { color:var(--accent); }
   .setup-sub { font-size:13px; color:var(--muted); line-height:1.6; margin-bottom:24px; max-width:300px; }
-  .setup-label { font-size:10px; color:var(--muted); letter-spacing:1px; text-transform:uppercase; text-align:left; width:100%; margin-bottom:6px; margin-top:14px; }
+  .setup-label { font-size:10px; color:var(--muted); letter-spacing:1px; text-transform:uppercase; text-align:left; width:100%; margin-bottom:8px; margin-top:16px; }
   .setup-input { width:100%; padding:14px; background:var(--surface); border:1px solid var(--border); border-radius:12px; color:var(--text); font-size:13px; font-family:monospace; -webkit-appearance:none; outline:none; }
   .setup-input:focus { border-color:var(--accent); }
-  .setup-btn { width:100%; padding:15px; background:var(--accent); color:#000; border:none; border-radius:13px; font-size:14px; font-weight:700; cursor:pointer; -webkit-appearance:none; margin-top:20px; }
+  .setup-btn { width:100%; padding:15px; background:var(--accent); color:#000; border:none; border-radius:13px; font-size:14px; font-weight:700; cursor:pointer; margin-top:20px; }
   .setup-note { font-size:11px; color:var(--muted); margin-top:14px; line-height:1.6; }
-
-  /* ASSET FILTER */
-  .filter-section { margin-bottom:14px; }
-  .filter-label { font-size:9px; color:var(--muted); letter-spacing:2px; text-transform:uppercase; margin-bottom:8px; }
-  .filter-chips { display:flex; flex-wrap:wrap; gap:6px; }
-  .chip { font-size:11px; font-family:monospace; padding:5px 10px; border-radius:20px; border:1px solid var(--border); background:var(--surface); color:var(--muted); cursor:pointer; transition:all 0.15s; }
+  .chip-grid { display:flex; flex-wrap:wrap; gap:8px; width:100%; }
+  .chip { font-size:12px; font-family:monospace; padding:6px 12px; border-radius:20px; border:1px solid var(--border); background:var(--surface); color:var(--muted); cursor:pointer; }
   .chip.active { background:var(--accent); color:#000; border-color:var(--accent); font-weight:700; }
 
-  /* HEADER */
+  /* APP */
   #appScreen { display:none; }
   .header { display:flex; justify-content:space-between; align-items:flex-start; padding:24px 0 14px; }
   .greeting { font-size:10px; color:var(--muted); letter-spacing:2px; text-transform:uppercase; margin-bottom:4px; }
   .title { font-size:26px; font-weight:800; letter-spacing:-0.5px; }
   .title span { color:var(--accent); }
-  .header-right { display:flex; flex-direction:column; align-items:flex-end; gap:8px; }
+  .header-right { display:flex; align-items:center; gap:8px; }
   .date-badge { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:8px 12px; text-align:right; }
   .date-day { font-size:20px; font-weight:700; color:var(--accent); line-height:1; }
   .date-month { font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; }
-  .theme-btn { background:none; border:1px solid var(--border); border-radius:8px; padding:5px 8px; font-size:14px; cursor:pointer; color:var(--muted); }
+  .icon-btn { background:none; border:1px solid var(--border); border-radius:8px; padding:6px 9px; font-size:14px; cursor:pointer; }
+
+  /* FEAR & GREED */
+  .fg-card { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:12px 14px; margin-bottom:12px; display:flex; align-items:center; gap:12px; }
+  .fg-gauge { width:48px; height:48px; flex-shrink:0; }
+  .fg-info { flex:1; }
+  .fg-label { font-size:9px; color:var(--muted); letter-spacing:2px; text-transform:uppercase; margin-bottom:4px; }
+  .fg-value { font-size:22px; font-weight:800; line-height:1; }
+  .fg-name { font-size:11px; color:var(--muted); margin-top:2px; }
+  .fg-bar { height:6px; border-radius:3px; background:var(--surface2); margin-top:6px; overflow:hidden; }
+  .fg-bar-fill { height:100%; border-radius:3px; transition:width 0.8s; }
 
   /* TICKER */
-  .ticker { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:10px 14px; margin-bottom:14px; }
-  .ticker-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+  .ticker { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:12px 14px; margin-bottom:12px; }
+  .ticker-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
   .ticker-label { font-size:9px; color:var(--muted); letter-spacing:2px; text-transform:uppercase; }
   .ticker-time { font-size:9px; color:var(--muted); font-family:monospace; }
-  .ticker-scroll { display:flex; gap:16px; overflow-x:auto; scrollbar-width:none; }
-  .ticker-scroll::-webkit-scrollbar { display:none; }
-  .ticker-item { flex-shrink:0; display:flex; flex-direction:column; gap:2px; min-width:44px; }
-  .tsym { font-size:10px; font-weight:700; font-family:monospace; color:var(--text); }
-  .tprice { font-size:10px; font-family:monospace; color:var(--sub); }
-  .tval { font-size:10px; font-family:monospace; padding:2px 5px; border-radius:4px; }
-  .tup { color:var(--accent); background:rgba(0,255,136,0.1); }
-  .tdn { color:var(--down); background:rgba(255,68,102,0.1); }
+  .ticker-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:8px; }
+  .ticker-item { background:var(--surface2); border-radius:8px; padding:8px 10px; }
+  .ti-top { display:flex; justify-content:space-between; align-items:center; margin-bottom:2px; }
+  .ti-sym { font-size:11px; font-weight:700; font-family:monospace; }
+  .ti-chg { font-size:10px; font-family:monospace; padding:2px 5px; border-radius:4px; }
+  .ti-price { font-size:13px; font-weight:600; font-family:monospace; }
+  .tup { color:var(--accent); background:rgba(0,255,136,0.12); }
+  .tdn { color:var(--down); background:rgba(255,68,102,0.12); }
 
-  /* BUTTONS */
-  #mainBtn { width:100%; padding:15px; background:var(--accent); color:#000; border:none; border-radius:13px; font-size:14px; font-weight:700; cursor:pointer; margin-bottom:6px; -webkit-appearance:none; }
+  /* EARNINGS */
+  .earnings-card { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:12px 14px; margin-bottom:12px; }
+  .earnings-label { font-size:9px; color:var(--muted); letter-spacing:2px; text-transform:uppercase; margin-bottom:10px; }
+  .earnings-list { display:flex; flex-direction:column; gap:6px; }
+  .earning-item { display:flex; justify-content:space-between; align-items:center; font-size:12px; }
+  .earning-ticker { font-weight:700; font-family:monospace; color:var(--text); }
+  .earning-name { color:var(--muted); font-size:11px; flex:1; margin:0 8px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .earning-eps { font-family:monospace; color:var(--sub); font-size:11px; }
+
+  /* MAIN BTN */
+  #mainBtn { width:100%; padding:15px; background:var(--accent); color:#000; border:none; border-radius:13px; font-size:14px; font-weight:700; cursor:pointer; margin-bottom:6px; }
   #mainBtn:disabled { opacity:0.6; }
   #mainBtn.done { background:transparent; color:var(--accent); border:1px solid var(--border); }
   .step-indicator { font-size:11px; color:var(--muted); text-align:center; margin-bottom:10px; font-family:monospace; min-height:16px; }
@@ -78,7 +93,7 @@
   .tab { flex:1; padding:10px; background:var(--surface); border:1px solid var(--border); border-radius:10px; font-size:12px; font-weight:600; cursor:pointer; text-align:center; color:var(--muted); }
   .tab.active { background:var(--accent); color:#000; border-color:var(--accent); }
 
-  /* CONTENT */
+  /* RESULT */
   .empty-state { text-align:center; padding:40px 20px; color:var(--muted); }
   .empty-icon { font-size:40px; margin-bottom:12px; }
   .empty-state p { font-size:13px; line-height:1.6; }
@@ -86,10 +101,13 @@
   .sl { background:var(--surface2); border-radius:5px; margin-bottom:7px; animation:shimmer 1.4s infinite; }
   @keyframes shimmer { 0%,100%{opacity:0.4} 50%{opacity:0.8} }
   .error-box { background:rgba(255,68,102,0.08); border:1px solid rgba(255,68,102,0.2); border-radius:12px; padding:14px; font-size:12px; color:var(--down); line-height:1.6; word-break:break-word; }
+
+  /* BRIEFING */
   #result { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:16px; }
   .l-empty { height:8px; }
   .l-section { font-size:13px; font-weight:800; color:var(--accent); letter-spacing:1px; text-transform:uppercase; margin:20px 0 10px; border-bottom:1px solid var(--border); padding-bottom:8px; }
   .l-section:first-child { margin-top:0; }
+  .l-summary { font-size:14px; font-weight:700; color:var(--text); background:var(--surface2); border-left:3px solid var(--accent); padding:10px 12px; border-radius:0 8px 8px 0; margin-bottom:4px; line-height:1.5; }
   .l-noticia { font-size:14px; font-weight:700; color:var(--text); margin-top:16px; margin-bottom:4px; }
   .l-alto { font-size:12px; color:var(--down); font-weight:600; margin-bottom:2px; }
   .l-medio { font-size:12px; color:var(--warn); font-weight:600; margin-bottom:2px; }
@@ -100,20 +118,14 @@
   .l-normal { font-size:13px; color:var(--sub); line-height:1.6; margin-bottom:2px; }
   .source-tag { font-size:10px; color:var(--muted); font-family:monospace; margin-top:12px; padding-top:12px; border-top:1px solid var(--border); line-height:1.8; }
   .source-tag.real { color:var(--accent); }
-
-  /* SHARE BTN */
   .action-row { display:flex; gap:8px; margin-top:12px; }
-  .action-btn { flex:1; padding:10px; background:var(--surface2); border:1px solid var(--border); border-radius:10px; font-size:12px; font-weight:600; cursor:pointer; color:var(--muted); text-align:center; }
-  .action-btn:hover { border-color:var(--accent); color:var(--accent); }
+  .action-btn { flex:1; padding:10px; background:var(--surface2); border:1px solid var(--border); border-radius:10px; font-size:12px; font-weight:600; cursor:pointer; color:var(--muted); }
 
   /* HISTORY */
   .history-item { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:12px 14px; margin-bottom:8px; cursor:pointer; }
   .history-date { font-size:10px; font-family:monospace; color:var(--muted); margin-bottom:4px; }
   .history-preview { font-size:12px; color:var(--sub); line-height:1.4; }
-  .history-empty { text-align:center; padding:30px 20px; color:var(--muted); font-size:13px; }
-
-  /* ALERT BADGE */
-  .alert-badge { display:inline-block; background:var(--down); color:#fff; font-size:9px; font-weight:700; padding:2px 6px; border-radius:10px; margin-left:6px; vertical-align:middle; }
+  .history-empty { text-align:center; padding:30px; color:var(--muted); font-size:13px; }
 
   .reset-btn { font-size:11px; color:var(--muted); background:none; border:none; cursor:pointer; display:block; margin:16px auto 0; text-decoration:underline; }
 </style>
@@ -122,22 +134,23 @@
 
 <!-- SETUP -->
 <div id="setupScreen">
-  <div class="setup-icon">🔑</div>
+  <div class="setup-icon">📊</div>
   <div class="setup-title">Market<span>Brief</span></div>
-  <p class="setup-sub">Solo necesitas tu API key de Groq. Noticias de ForexFactory y Google News en tiempo real.</p>
-  <div class="setup-label">API Key de Groq</div>
-  <input class="setup-input" type="password" id="groqKey" placeholder="gsk_..." autocomplete="off" autocorrect="off" spellcheck="false" />
+  <p class="setup-sub">Tu briefing de trading diario con datos reales. Solo necesitas tu API key de Groq — todo lo demás es gratuito y automático.</p>
 
-  <div class="setup-label" style="margin-top:20px">¿Qué tradeas? (selecciona todos)</div>
-  <div class="filter-chips" style="width:100%;justify-content:flex-start">
-    <span class="chip active" data-cat="indices">Índices</span>
-    <span class="chip active" data-cat="forex">Forex</span>
-    <span class="chip active" data-cat="crypto">Cripto</span>
-    <span class="chip active" data-cat="commodities">Materias primas</span>
-    <span class="chip active" data-cat="stocks">Acciones</span>
+  <div class="setup-label">API Key de Groq (IA gratuita)</div>
+  <input class="setup-input" type="password" id="groqKey" placeholder="gsk_..." autocomplete="off" spellcheck="false" />
+
+  <div class="setup-label" style="margin-top:20px">¿Qué tradeas?</div>
+  <div class="chip-grid">
+    <span class="chip active" data-cat="indices">📈 Índices</span>
+    <span class="chip active" data-cat="forex">💱 Forex</span>
+    <span class="chip active" data-cat="crypto">₿ Cripto</span>
+    <span class="chip active" data-cat="commodities">🛢 Materias primas</span>
+    <span class="chip active" data-cat="stocks">🏢 Acciones</span>
   </div>
 
-  <button class="setup-btn" onclick="saveKey()">Guardar y continuar →</button>
+  <button class="setup-btn" onclick="saveKey()">Comenzar →</button>
   <p class="setup-note">Tu key se guarda solo en tu dispositivo<br>Consíguela gratis en console.groq.com</p>
 </div>
 
@@ -155,19 +168,43 @@
           <div class="date-day" id="dayNum"></div>
           <div class="date-month" id="monthStr"></div>
         </div>
-        <button class="theme-btn" onclick="toggleTheme()" id="themeBtn">🌙</button>
+        <button class="icon-btn" onclick="toggleTheme()" id="themeBtn">🌙</button>
       </div>
     </div>
 
-    <!-- TICKER REAL -->
+    <!-- FEAR & GREED -->
+    <div class="fg-card" id="fgCard">
+      <svg class="fg-gauge" id="fgSvg" viewBox="0 0 48 48">
+        <circle cx="24" cy="24" r="20" fill="none" stroke="var(--surface2)" stroke-width="5"/>
+        <circle cx="24" cy="24" r="20" fill="none" stroke="var(--accent)" stroke-width="5"
+          stroke-dasharray="125.6" stroke-dashoffset="125.6" id="fgCircle"
+          transform="rotate(-90 24 24)" style="transition:stroke-dashoffset 1s,stroke 0.5s"/>
+      </svg>
+      <div class="fg-info">
+        <div class="fg-label">Fear & Greed Index</div>
+        <div class="fg-value" id="fgValue">–</div>
+        <div class="fg-name" id="fgName">Cargando...</div>
+      </div>
+    </div>
+
+    <!-- TICKER -->
     <div class="ticker">
       <div class="ticker-header">
         <div class="ticker-label">Precios en tiempo real</div>
         <div class="ticker-time" id="tickerTime">–</div>
       </div>
-      <div class="ticker-scroll" id="tickerScroll">
-        <div style="color:var(--muted);font-size:11px">Cargando...</div>
+      <div class="ticker-grid" id="tickerGrid">
+        <div class="sl" style="height:52px;border-radius:8px"></div>
+        <div class="sl" style="height:52px;border-radius:8px"></div>
+        <div class="sl" style="height:52px;border-radius:8px"></div>
+        <div class="sl" style="height:52px;border-radius:8px"></div>
       </div>
+    </div>
+
+    <!-- EARNINGS -->
+    <div class="earnings-card" id="earningsCard" style="display:none">
+      <div class="earnings-label">📋 Earnings esta semana</div>
+      <div class="earnings-list" id="earningsList"></div>
     </div>
 
     <!-- TABS -->
@@ -176,19 +213,19 @@
       <div class="tab" id="tab-history" onclick="switchTab('history')">📁 Historial</div>
     </div>
 
-    <!-- BRIEFING TAB -->
+    <!-- BRIEFING -->
     <div id="tabContent-briefing">
       <button id="mainBtn" onclick="generate()">⚡ Generar Briefing de Hoy</button>
       <div id="stepMsg" class="step-indicator"></div>
       <div id="content">
         <div class="empty-state">
           <div class="empty-icon">📊</div>
-          <p>Pulsa el botón para recibir tu briefing completo: precios reales + calendario económico + geopolítica + análisis IA.</p>
+          <p>Pulsa el botón para recibir tu briefing completo con datos reales de mercado, calendario económico, noticias geopolíticas y análisis IA.</p>
         </div>
       </div>
     </div>
 
-    <!-- HISTORY TAB -->
+    <!-- HISTORY -->
     <div id="tabContent-history" style="display:none">
       <div id="historyList"></div>
     </div>
@@ -198,52 +235,66 @@
 </div>
 
 <script>
-  var PROXY   = 'https://marketbrief-proxy.dburgos122002.workers.dev';
-  var MONTHS  = ['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV','DIC'];
-  var DAYS    = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
-  var now     = new Date();
+  var PROXY    = 'https://marketbrief-proxy.dburgos122002.workers.dev';
+  var MONTHS   = ['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV','DIC'];
+  var DAYS     = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+  var now      = new Date();
   var todayISO = now.toISOString().slice(0,10);
   var todayStr = now.toLocaleDateString('es-ES', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
 
+  var TICKER_MAP = {
+    'SPY':      {label:'SPY',   name:'S&P 500'},
+    'QQQ':      {label:'QQQ',   name:'Nasdaq'},
+    'GLD':      {label:'GLD',   name:'Oro'},
+    'BTC-USD':  {label:'BTC',   name:'Bitcoin'},
+    'ETH-USD':  {label:'ETH',   name:'Ethereum'},
+    'EURUSD=X': {label:'EUR/USD',name:'Euro/Dólar'},
+    'USDJPY=X': {label:'USD/JPY',name:'Dólar/Yen'},
+    'CL=F':     {label:'OIL',   name:'Petróleo'},
+    'DX-Y.NYB': {label:'DXY',   name:'Índice Dólar'},
+    'GBPUSD=X': {label:'GBP/USD',name:'Libra/Dólar'},
+  };
+
+  var CAT_TICKERS = {
+    indices:     'SPY, QQQ, DAX, IBEX35',
+    forex:       'EUR/USD, USD/JPY, GBP/USD, DXY',
+    crypto:      'BTC, ETH, SOL',
+    commodities: 'GLD, OIL, XAU/USD',
+    stocks:      'NVDA, AAPL, MSFT, TSLA, META'
+  };
+
   // Theme
   var theme = localStorage.getItem('mb_theme') || 'dark';
-  if (theme === 'light') { document.body.classList.add('light'); document.getElementById('themeBtn') && (document.getElementById('themeBtn').textContent = '☀️'); }
+  if (theme === 'light') document.body.classList.add('light');
 
   function toggleTheme() {
     theme = theme === 'dark' ? 'light' : 'dark';
-    document.body.classList.toggle('light');
+    document.body.classList.toggle('light', theme === 'light');
     document.getElementById('themeBtn').textContent = theme === 'dark' ? '🌙' : '☀️';
     localStorage.setItem('mb_theme', theme);
   }
 
-  // Setup chip toggle
+  // Chips
   document.querySelectorAll('.chip').forEach(function(c) {
     c.addEventListener('click', function() { this.classList.toggle('active'); });
   });
 
-  function getActiveCategories() {
-    var cats = [];
-    document.querySelectorAll('.chip.active').forEach(function(c) { cats.push(c.dataset.cat); });
-    return cats;
-  }
-
   // Init
   if (localStorage.getItem('mb_groq_key')) {
     showApp();
-    loadTicker();
-    checkEventAlerts();
+    loadMarketData();
   }
 
   function saveKey() {
     var k = document.getElementById('groqKey').value.trim();
     if (!k || k.indexOf('gsk_') !== 0) { alert('Key inválida (debe empezar por gsk_)'); return; }
-    var cats = getActiveCategories();
+    var cats = [];
+    document.querySelectorAll('.chip.active').forEach(function(c){ cats.push(c.dataset.cat); });
     if (!cats.length) { alert('Selecciona al menos una categoría'); return; }
     localStorage.setItem('mb_groq_key', k);
     localStorage.setItem('mb_categories', JSON.stringify(cats));
     showApp();
-    loadTicker();
-    checkEventAlerts();
+    loadMarketData();
   }
 
   function showApp() {
@@ -251,19 +302,17 @@
     document.getElementById('appScreen').style.display   = 'block';
     document.getElementById('dayNum').textContent   = now.getDate();
     document.getElementById('monthStr').textContent = MONTHS[now.getMonth()] + ' ' + DAYS[now.getDay()];
-    renderHistory();
+    document.getElementById('themeBtn').textContent = theme === 'dark' ? '🌙' : '☀️';
   }
 
   function resetKey() {
-    localStorage.removeItem('mb_groq_key');
-    localStorage.removeItem('mb_categories');
+    ['mb_groq_key','mb_categories'].forEach(function(k){ localStorage.removeItem(k); });
     document.getElementById('appScreen').style.display   = 'none';
     document.getElementById('setupScreen').style.display = 'flex';
   }
 
   function setStep(msg) { document.getElementById('stepMsg').textContent = msg; }
 
-  // TABS
   function switchTab(tab) {
     ['briefing','history'].forEach(function(t) {
       document.getElementById('tab-' + t).classList.toggle('active', t === tab);
@@ -272,148 +321,84 @@
     if (tab === 'history') renderHistory();
   }
 
-  // =====================
-  // REAL PRICES (Yahoo Finance via allorigins proxy)
-  // =====================
-  var TICKERS = [
-    {sym:'SPY',  yf:'SPY'},
-    {sym:'QQQ',  yf:'QQQ'},
-    {sym:'BTC',  yf:'BTC-USD'},
-    {sym:'ETH',  yf:'ETH-USD'},
-    {sym:'GLD',  yf:'GLD'},
-    {sym:'OIL',  yf:'CL=F'},
-    {sym:'EURUSD', yf:'EURUSD=X'},
-    {sym:'DXY',  yf:'DX-Y.NYB'},
-  ];
+  // ── MARKET DATA ────────────────────────────────────────────────────
+  async function loadMarketData() {
+    await Promise.allSettled([loadQuotes(), loadFearGreed(), loadEarnings()]);
+  }
 
-  async function loadTicker() {
-    var symbols = TICKERS.map(function(t){ return t.yf; }).join(',');
-    var url = 'https://query1.finance.yahoo.com/v7/finance/quote?symbols=' + encodeURIComponent(symbols);
-    var proxy = 'https://api.allorigins.win/get?url=' + encodeURIComponent(url);
+  async function loadQuotes() {
     try {
-      var res  = await fetch(proxy);
-      var json = await res.json();
-      var data = JSON.parse(json.contents);
-      var quotes = data.quoteResponse && data.quoteResponse.result;
-      if (!quotes || !quotes.length) return;
+      var r    = await fetch(PROXY + '?type=quotes');
+      var data = await r.json();
+      if (!Array.isArray(data) || !data.length) throw new Error('no data');
 
       var html = '';
-      quotes.forEach(function(q) {
-        var sym   = TICKERS.find(function(t){ return t.yf === q.symbol; });
-        var label = sym ? sym.sym : q.symbol;
-        var chg   = q.regularMarketChangePercent || 0;
-        var price = q.regularMarketPrice || 0;
+      data.forEach(function(q) {
+        var info  = TICKER_MAP[q.symbol] || { label: q.symbol, name: '' };
+        var chg   = parseFloat(q.change) || 0;
+        var price = parseFloat(q.price)  || 0;
         var up    = chg >= 0;
-        var chgStr = (up ? '+' : '') + chg.toFixed(2) + '%';
-        var priceStr = price > 100 ? price.toFixed(2) : price > 1 ? price.toFixed(3) : price.toFixed(4);
+        var chgStr   = (up ? '+' : '') + chg.toFixed(2) + '%';
+        var priceStr = price >= 1000 ? price.toFixed(2) : price >= 10 ? price.toFixed(3) : price.toFixed(4);
         html += '<div class="ticker-item">';
-        html += '<span class="tsym">' + label + '</span>';
-        html += '<span class="tprice">' + priceStr + '</span>';
-        html += '<span class="tval ' + (up ? 'tup' : 'tdn') + '">' + chgStr + '</span>';
+        html += '<div class="ti-top"><span class="ti-sym">' + info.label + '</span><span class="ti-chg ' + (up?'tup':'tdn') + '">' + chgStr + '</span></div>';
+        html += '<div class="ti-price">' + priceStr + '</div>';
         html += '</div>';
       });
 
-      document.getElementById('tickerScroll').innerHTML = html;
+      document.getElementById('tickerGrid').innerHTML = html;
       var t = new Date();
       document.getElementById('tickerTime').textContent = t.getHours() + ':' + String(t.getMinutes()).padStart(2,'0');
     } catch(e) {
-      document.getElementById('tickerScroll').innerHTML = '<div style="color:var(--muted);font-size:11px">Sin datos en tiempo real</div>';
+      document.getElementById('tickerGrid').innerHTML = '<div style="color:var(--muted);font-size:11px;grid-column:1/-1">Precios no disponibles</div>';
     }
   }
 
-  // =====================
-  // EVENT ALERTS
-  // =====================
-  async function checkEventAlerts() {
-    if (!('Notification' in window)) return;
+  async function loadFearGreed() {
     try {
-      var res = await fetch(PROXY + '?type=calendar');
-      var events = await res.json();
-      var highToday = events.filter(function(e) {
-        return e.impact === 'High' && e.date && e.date.slice(0,10) === todayISO && e.time;
-      });
+      var r    = await fetch(PROXY + '?type=feargreed');
+      var data = await r.json();
+      var item = data.data && data.data[0];
+      if (!item) return;
 
-      highToday.forEach(function(e) {
-        var parts = e.time.split(':');
-        var eventTime = new Date();
-        eventTime.setHours(parseInt(parts[0]), parseInt(parts[1] || 0), 0);
-        var alertTime = new Date(eventTime.getTime() - 30 * 60 * 1000);
-        var msUntil = alertTime.getTime() - Date.now();
+      var val   = parseInt(item.value);
+      var name  = item.value_classification || '';
+      var names = { 'Extreme Fear':'Miedo extremo', 'Fear':'Miedo', 'Neutral':'Neutral', 'Greed':'Codicia', 'Extreme Greed':'Codicia extrema' };
+      var nameEs = names[name] || name;
+      var color = val < 25 ? '#ff4466' : val < 45 ? '#ffaa00' : val < 55 ? '#aaaaaa' : val < 75 ? '#00dd77' : '#00ff88';
+      var circumference = 125.6;
+      var offset = circumference - (val / 100) * circumference;
 
-        if (msUntil > 0 && msUntil < 8 * 60 * 60 * 1000) {
-          setTimeout(function() {
-            if (Notification.permission === 'granted') {
-              new Notification('⚠️ Evento de alto impacto en 30 min', {
-                body: e.country + ' — ' + e.title + ' a las ' + e.time,
-                icon: 'https://diiegobcfx.github.io/MarketBrief/icon.png'
-              });
-            }
-          }, msUntil);
-
-          // Solicitar permiso si no está concedido
-          if (Notification.permission === 'default') {
-            Notification.requestPermission();
-          }
-        }
-      });
-
-      // Mostrar badge en tab si hay eventos hoy
-      if (highToday.length > 0) {
-        var tabEl = document.getElementById('tab-briefing');
-        if (tabEl && !tabEl.querySelector('.alert-badge')) {
-          tabEl.innerHTML += '<span class="alert-badge">' + highToday.length + '</span>';
-        }
-      }
+      document.getElementById('fgValue').textContent = val;
+      document.getElementById('fgValue').style.color = color;
+      document.getElementById('fgName').textContent  = nameEs;
+      document.getElementById('fgCircle').style.strokeDashoffset = offset;
+      document.getElementById('fgCircle').style.stroke = color;
     } catch(e) {}
   }
 
-  // =====================
-  // HISTORY
-  // =====================
-  function saveToHistory(text, sources) {
-    var history = JSON.parse(localStorage.getItem('mb_history') || '[]');
-    history.unshift({
-      date: todayISO,
-      dateStr: todayStr,
-      text: text,
-      sources: sources
-    });
-    // Guardar máximo 7 días
-    history = history.slice(0, 7);
-    localStorage.setItem('mb_history', JSON.stringify(history));
+  async function loadEarnings() {
+    try {
+      var r    = await fetch(PROXY + '?type=earnings');
+      var data = await r.json();
+      var list = data.earnings;
+      if (!list || !list.length) return;
+
+      var html = '';
+      list.slice(0,6).forEach(function(e) {
+        html += '<div class="earning-item">';
+        html += '<span class="earning-ticker">' + esc(e.ticker) + '</span>';
+        html += '<span class="earning-name">' + esc(e.name) + '</span>';
+        html += '<span class="earning-eps">EPS: ' + esc(e.eps || '–') + '</span>';
+        html += '</div>';
+      });
+
+      document.getElementById('earningsList').innerHTML = html;
+      document.getElementById('earningsCard').style.display = 'block';
+    } catch(e) {}
   }
 
-  function renderHistory() {
-    var history = JSON.parse(localStorage.getItem('mb_history') || '[]');
-    var el = document.getElementById('historyList');
-    if (!history.length) {
-      el.innerHTML = '<div class="history-empty">No hay briefings guardados todavía.<br>Genera tu primer briefing para verlo aquí.</div>';
-      return;
-    }
-    var html = '';
-    history.forEach(function(h, i) {
-      var preview = h.text.split('\n').find(function(l){ return l.trim().length > 20; }) || '';
-      preview = preview.replace(/\*\*/g,'').trim().slice(0, 80) + '...';
-      html += '<div class="history-item" onclick="showHistoryItem(' + i + ')">';
-      html += '<div class="history-date">📅 ' + h.dateStr + '</div>';
-      html += '<div class="history-preview">' + esc(preview) + '</div>';
-      html += '</div>';
-    });
-    el.innerHTML = html;
-  }
-
-  function showHistoryItem(i) {
-    var history = JSON.parse(localStorage.getItem('mb_history') || '[]');
-    var h = history[i];
-    if (!h) return;
-    switchTab('briefing');
-    renderText(h.text, h.sources, true);
-    document.getElementById('content').scrollIntoView({behavior:'smooth'});
-  }
-
-  // =====================
-  // GENERATE
-  // =====================
+  // ── GENERATE BRIEFING ──────────────────────────────────────────────
   var NEWS_TOPICS = [
     { topic: 'mercados financieros bolsa economia',   label: 'Google News Mercados' },
     { topic: 'geopolitica guerra conflicto economia', label: 'Google News Geopolítica' },
@@ -427,18 +412,10 @@
     return '⚪ BAJO';
   }
 
-  var CATEGORY_TICKERS = {
-    indices:     'SPY, QQQ, DAX, IBEX, NQ',
-    forex:       'EURUSD, USDJPY, GBPUSD, AUDUSD, DXY',
-    crypto:      'BTC, ETH, SOL, BNB',
-    commodities: 'GLD, XAUUSD, OIL, CL=F, NG, COPPER',
-    stocks:      'NVDA, AAPL, MSFT, TSLA, AMZN, META'
-  };
-
   async function generate() {
-    var groqKey = localStorage.getItem('mb_groq_key');
-    if (!groqKey) { resetKey(); return; }
+    var groqKey    = localStorage.getItem('mb_groq_key');
     var categories = JSON.parse(localStorage.getItem('mb_categories') || '["indices","forex","crypto","commodities","stocks"]');
+    if (!groqKey) { resetKey(); return; }
 
     var btn     = document.getElementById('mainBtn');
     var content = document.getElementById('content');
@@ -447,21 +424,22 @@
     btn.className   = '';
     btn.textContent = '⏳ Cargando...';
     content.innerHTML =
-      '<div class="skel"><div class="sl" style="width:30%;height:10px"></div><div class="sl" style="width:85%;height:15px;margin-top:4px"></div><div class="sl" style="width:95%;height:10px"></div></div>' +
-      '<div class="skel"><div class="sl" style="width:40%;height:10px"></div><div class="sl" style="width:75%;height:15px;margin-top:4px"></div><div class="sl" style="width:90%;height:10px"></div></div>' +
-      '<div class="skel"><div class="sl" style="width:35%;height:10px"></div><div class="sl" style="width:80%;height:15px;margin-top:4px"></div><div class="sl" style="width:70%;height:10px"></div></div>';
+      '<div class="skel"><div class="sl" style="width:30%;height:10px"></div><div class="sl" style="width:85%;height:15px;margin-top:4px"></div><div class="sl" style="width:95%;height:10px"></div></div>'.repeat(3);
 
     var calendarText = '';
     var newsText     = '';
+    var fgText       = '';
     var activeSources = [];
 
-    setStep('📅 Cargando calendario y noticias...');
+    setStep('📅 Cargando datos del mercado...');
 
-    var requests = [
-      fetch(PROXY + '?type=calendar').then(function(r){ return r.json(); }).catch(function(){ return null; })
+    // Peticiones en paralelo
+    var reqs = [
+      fetch(PROXY + '?type=calendar').then(function(r){ return r.json(); }).catch(function(){ return null; }),
+      fetch(PROXY + '?type=feargreed').then(function(r){ return r.json(); }).catch(function(){ return null; }),
     ];
     NEWS_TOPICS.forEach(function(t) {
-      requests.push(
+      reqs.push(
         fetch(PROXY + '?type=news&topic=' + encodeURIComponent(t.topic))
           .then(function(r){ return r.json(); })
           .then(function(d){ return { label: t.label, data: d }; })
@@ -469,13 +447,13 @@
       );
     });
 
-    var results = await Promise.allSettled(requests);
+    var results = await Promise.allSettled(reqs);
 
     // Calendario
     var calRes = results[0];
     if (calRes.status === 'fulfilled' && calRes.value && !calRes.value.error) {
-      var events  = calRes.value;
-      var todayEv = events.filter(function(e){ return e.date && e.date.slice(0,10) === todayISO; });
+      var events   = calRes.value;
+      var todayEv  = events.filter(function(e){ return e.date && e.date.slice(0,10) === todayISO; });
       var highWeek = events.filter(function(e){ return e.impact === 'High' && e.date && e.date.slice(0,10) !== todayISO; });
 
       if (todayEv.length > 0) {
@@ -501,8 +479,18 @@
       }
     }
 
-    // Noticias RSS
-    for (var r = 1; r < results.length; r++) {
+    // Fear & Greed
+    var fgRes = results[1];
+    if (fgRes.status === 'fulfilled' && fgRes.value && fgRes.value.data) {
+      var fg = fgRes.value.data[0];
+      if (fg) {
+        fgText = 'Fear & Greed Index actual: ' + fg.value + '/100 (' + fg.value_classification + ')';
+        activeSources.push('Fear & Greed Index');
+      }
+    }
+
+    // Noticias
+    for (var r = 2; r < results.length; r++) {
       var res = results[r];
       if (res.status === 'fulfilled' && res.value && res.value.data && res.value.data.items && res.value.data.items.length) {
         var feed = res.value;
@@ -516,28 +504,28 @@
     }
 
     var hasReal = calendarText.length > 0 || newsText.length > 0;
-
-    // Tickers del usuario
-    var userTickers = categories.map(function(c){ return CATEGORY_TICKERS[c] || ''; }).filter(Boolean).join(', ');
+    var userTickers = categories.map(function(c){ return CAT_TICKERS[c] || ''; }).filter(Boolean).join(', ');
 
     setStep('🤖 Analizando con IA...');
 
-    var prompt = 'Hoy es ' + todayStr + '. Genera un briefing de trading completo y detallado en español correcto, sin errores ortográficos.\n\n';
-    if (calendarText) prompt += '=== CALENDARIO ECONÓMICO REAL (ForexFactory) ===\n' + calendarText + '\n';
+    var prompt = 'Hoy es ' + todayStr + '. Genera un briefing de trading completo y detallado en español correcto.\n\n';
+    if (fgText)       prompt += '=== SENTIMIENTO DEL MERCADO ===\n' + fgText + '\n\n';
+    if (calendarText) prompt += '=== CALENDARIO ECONÓMICO (ForexFactory) ===\n' + calendarText + '\n';
     if (newsText)     prompt += '=== NOTICIAS REALES DE HOY ===\n' + newsText + '\n';
     if (!hasReal)     prompt += 'Usa tu conocimiento actualizado.\n\n';
 
-    prompt += '\nEl trader opera principalmente: ' + categories.join(', ') + '. Céntrate en los activos: ' + userTickers + '\n\n';
-    prompt += 'IMPORTANTE: No uses asteriscos (**) ni markdown. Escribe en texto plano.\n\n';
-    prompt += 'Genera el briefing en este formato:\n\n';
+    prompt += '\nEl trader opera: ' + categories.join(', ') + '. Activos relevantes: ' + userTickers + '\n\n';
+    prompt += 'IMPORTANTE: Sin asteriscos (**) ni markdown. Solo texto plano.\n\n';
+    prompt += 'Formato del briefing:\n\n';
+    prompt += '🎯 RESUMEN EJECUTIVO\n[3-4 frases que resuman TODO lo más importante del día: el dato o evento más relevante, el sentimiento del mercado y el consejo principal. Esto es lo primero que lee el trader.]\n\n';
     prompt += '📡 CONTEXTO DE LA SEMANA\n[4-5 frases del contexto macro global]\n\n';
     prompt += '🌍 GEOPOLÍTICA Y RIESGO\n[4-5 frases sobre tensiones geopolíticas y su impacto en los mercados]\n\n';
-    prompt += '⚡ SESIÓN DE HOY\n• Sentimiento: [Risk-on / Risk-off / Mixto — por qué]\n• Volatilidad esperada: [Alta / Media / Baja — por qué]\n• Sesiones activas: [cuáles están abiertas]\n• Consejo del día: [consejo concreto y razonado]\n\n';
-    prompt += '📊 NIVELES CLAVE\n[Para cada activo principal del trader: soporte clave, resistencia clave y nivel a vigilar hoy. Formato: TICKER — Soporte: X | Resistencia: X | Vigilar: X]\n\n';
+    prompt += '😨 SENTIMIENTO DEL MERCADO\n[Explica qué significa el Fear & Greed Index actual, si está en zona de miedo o codicia, y qué implica para operar hoy. 3-4 frases.]\n\n';
+    prompt += '⚡ SESIÓN DE HOY\n• Sentimiento: [Risk-on / Risk-off / Mixto — por qué]\n• Volatilidad esperada: [Alta / Media / Baja — por qué]\n• Sesiones activas: [cuáles están abiertas]\n• Consejo del día: [consejo concreto y razonado para hoy]\n\n';
     prompt += '📰 EVENTOS Y NOTICIAS CLAVE\n\n';
-    prompt += '1. [TÍTULO] — Impacto: [ALTO/MEDIO/BAJO]\n📅 [hora o día]\n[4-5 frases: qué es, qué se espera, qué pasa si sale mejor/peor, por qué importa]\nPrevisión: [dato] | Anterior: [dato]\nActivos afectados: [↑ o ↓ o → TICKER — razón]\n\n';
+    prompt += '1. [TÍTULO] — Impacto: [ALTO/MEDIO/BAJO]\n📅 [hora o día]\n[4-5 frases: qué es, qué se espera, qué pasa si sale mejor/peor, por qué importa]\nPrevisión: [dato] | Anterior: [dato si disponible]\nActivos afectados: [↑ o ↓ o → TICKER — razón]\n\n';
     prompt += '2. [igual]\n3. [igual]\n4. [igual]\n5. [igual]\n\n';
-    prompt += 'Escribe en español correcto. Sin asteriscos ni markdown.';
+    prompt += 'Escribe en español correcto y formal. Sin asteriscos ni markdown.';
 
     try {
       var groqRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
@@ -547,7 +535,7 @@
           model: 'llama-3.3-70b-versatile',
           max_tokens: 2500,
           messages: [
-            { role: 'system', content: 'Eres un analista senior de mercados financieros. Produces briefings de trading diarios detallados, profesionales y accionables en español correcto. NUNCA uses asteriscos ni markdown. Cuando tienes datos reales los usas y explicas en profundidad. Incluyes siempre niveles técnicos clave (soportes, resistencias) para los activos relevantes.' },
+            { role: 'system', content: 'Eres un analista senior de mercados financieros. Produces briefings de trading diarios detallados, profesionales y accionables en español correcto. NUNCA uses asteriscos ni markdown. Cuando tienes datos reales los usas y explicas en profundidad. Siempre empiezas con un resumen ejecutivo claro y directo.' },
             { role: 'user', content: prompt }
           ]
         })
@@ -564,13 +552,11 @@
 
       saveToHistory(raw, activeSources);
       setStep('');
-      renderText(raw, activeSources, hasReal);
+      renderBriefing(raw, activeSources, hasReal);
       btn.textContent = '↺ Actualizar briefing';
       btn.className   = 'done';
       btn.disabled    = false;
-
-      // Recargar ticker
-      loadTicker();
+      loadQuotes(); // Refresh prices
 
     } catch(e) {
       setStep('');
@@ -581,74 +567,85 @@
     }
   }
 
-  // =====================
-  // RENDER
-  // =====================
-  function renderText(raw, sources, hasReal) {
+  // ── HISTORY ────────────────────────────────────────────────────────
+  function saveToHistory(text, sources) {
+    var history = JSON.parse(localStorage.getItem('mb_history') || '[]');
+    // No duplicar si ya existe el de hoy
+    history = history.filter(function(h){ return h.date !== todayISO; });
+    history.unshift({ date: todayISO, dateStr: todayStr, text: text, sources: sources });
+    localStorage.setItem('mb_history', JSON.stringify(history.slice(0,7)));
+  }
+
+  function renderHistory() {
+    var history = JSON.parse(localStorage.getItem('mb_history') || '[]');
+    var el = document.getElementById('historyList');
+    if (!history.length) {
+      el.innerHTML = '<div class="history-empty">No hay briefings guardados todavía.</div>';
+      return;
+    }
+    el.innerHTML = history.map(function(h, i) {
+      var preview = (h.text.split('\n').find(function(l){ return l.trim().length > 30; }) || '').replace(/\*\*/g,'').trim().slice(0,90) + '...';
+      return '<div class="history-item" onclick="showHistoryItem(' + i + ')">' +
+        '<div class="history-date">📅 ' + h.dateStr + '</div>' +
+        '<div class="history-preview">' + esc(preview) + '</div>' +
+        '</div>';
+    }).join('');
+  }
+
+  function showHistoryItem(i) {
+    var h = JSON.parse(localStorage.getItem('mb_history') || '[]')[i];
+    if (!h) return;
+    switchTab('briefing');
+    renderBriefing(h.text, h.sources, true);
+  }
+
+  // ── RENDER ─────────────────────────────────────────────────────────
+  function renderBriefing(raw, sources, hasReal) {
     var lines = raw.split('\n');
     var html  = '<div id="result">';
     for (var i = 0; i < lines.length; i++) {
       var t = lines[i].trim();
       if (!t) { html += '<div class="l-empty"></div>'; continue; }
-      if (/^(📡|⚡|📰|🌍|📊)/.test(t))       html += '<div class="l-section">'  + esc(t) + '</div>';
+      if (/^(🎯|📡|⚡|📰|🌍|😨)/.test(t))   html += '<div class="l-section">'  + esc(t) + '</div>';
       else if (/^\d+\./.test(t))              html += '<div class="l-noticia">' + esc(t) + '</div>';
       else if (t.indexOf('ALTO')   > -1)      html += '<div class="l-alto">'    + esc(t) + '</div>';
       else if (t.indexOf('MEDIO')  > -1)      html += '<div class="l-medio">'   + esc(t) + '</div>';
       else if (t.indexOf('BAJO')   > -1)      html += '<div class="l-bajo">'    + esc(t) + '</div>';
       else if (t.indexOf('Activos') === 0 ||
-               t.indexOf('Previsión') === 0 ||
-               t.indexOf('Soporte') > -1)     html += '<div class="l-activos">' + esc(t) + '</div>';
+               t.indexOf('Previsión') === 0)  html += '<div class="l-activos">' + esc(t) + '</div>';
       else if (t.indexOf('•') === 0)          html += '<div class="l-bullet">'  + esc(t) + '</div>';
       else if (t.indexOf('📅') === 0)         html += '<div class="l-fecha">'   + esc(t) + '</div>';
       else                                    html += '<div class="l-normal">'  + esc(t) + '</div>';
     }
 
     if (hasReal && sources && sources.length > 0) {
-      var unique = sources.filter(function(v,i,a){ return a.indexOf(v)===i; });
-      html += '<div class="source-tag real">✅ Fuentes: ' + esc(unique.join(' · ')) + '</div>';
+      html += '<div class="source-tag real">✅ Fuentes: ' + esc([...new Set(sources)].join(' · ')) + '</div>';
     } else {
       html += '<div class="source-tag">🤖 Generado por IA</div>';
     }
 
-    // Botones de acción
     html += '<div class="action-row">';
     html += '<button class="action-btn" onclick="shareBriefing()">📤 Compartir</button>';
     html += '<button class="action-btn" onclick="copyBriefing()">📋 Copiar</button>';
-    html += '</div>';
+    html += '</div></div>';
 
-    html += '</div>';
     document.getElementById('content').innerHTML = html;
-
-    // Guardar texto para compartir
-    window._lastBriefingText = raw;
+    window._lastRaw = raw;
   }
 
-  // =====================
-  // SHARE & COPY
-  // =====================
   function shareBriefing() {
-    var text = window._lastBriefingText || '';
-    if (!text) return;
-    var clean = text.replace(/\*\*/g,'').slice(0, 1000) + '\n\n— MarketBrief';
-    if (navigator.share) {
-      navigator.share({ title: 'MarketBrief ' + todayISO, text: clean });
-    } else {
-      copyBriefing();
-      alert('Texto copiado al portapapeles');
-    }
+    var text = (window._lastRaw || '').replace(/\*\*/g,'').slice(0,1000) + '\n\n— MarketBrief';
+    if (navigator.share) navigator.share({ title: 'MarketBrief ' + todayISO, text: text });
+    else copyBriefing();
   }
 
   function copyBriefing() {
-    var text = window._lastBriefingText || '';
-    if (!text) return;
-    var clean = text.replace(/\*\*/g,'');
-    navigator.clipboard && navigator.clipboard.writeText(clean);
+    var text = (window._lastRaw || '').replace(/\*\*/g,'');
+    navigator.clipboard && navigator.clipboard.writeText(text);
   }
 
   function esc(s) {
-    s = s.replace(/\*\*(.*?)\*\*/g, '$1');
-    s = s.replace(/\*(.*?)\*/g, '$1');
-    s = s.replace(/__(.*?)__/g, '$1');
+    s = s.replace(/\*\*(.*?)\*\*/g,'$1').replace(/\*(.*?)\*/g,'$1').replace(/__(.*?)__/g,'$1');
     return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   }
 </script>
