@@ -21,7 +21,7 @@
   * { margin:0; padding:0; box-sizing:border-box; }
   body { background:var(--bg); color:var(--text); font-family:-apple-system,BlinkMacSystemFont,sans-serif; min-height:100vh; padding:0 16px 100px; transition:background 0.3s,color 0.3s; }
   .container { max-width:480px; margin:0 auto; }
- 
+
   /* SETUP */
   #setupScreen { display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; text-align:center; padding:32px 16px; }
   .setup-icon { font-size:48px; margin-bottom:20px; }
@@ -36,7 +36,7 @@
   .chip-grid { display:flex; flex-wrap:wrap; gap:8px; width:100%; }
   .chip { font-size:12px; padding:6px 12px; border-radius:20px; border:1px solid var(--border); background:var(--surface); color:var(--muted); cursor:pointer; }
   .chip.active { background:var(--accent); color:#000; border-color:var(--accent); font-weight:700; }
- 
+
   /* APP */
   #appScreen { display:none; }
   .header { display:flex; justify-content:space-between; align-items:flex-start; padding:24px 0 14px; }
@@ -48,7 +48,7 @@
   .date-day { font-size:20px; font-weight:700; color:var(--accent); line-height:1; }
   .date-month { font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; }
   .icon-btn { background:none; border:1px solid var(--border); border-radius:8px; padding:6px 9px; font-size:14px; cursor:pointer; }
- 
+
   /* FEAR & GREED */
   .fg-card { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:12px 14px; margin-bottom:12px; display:flex; align-items:center; gap:14px; }
   .fg-circle { position:relative; width:52px; height:52px; flex-shrink:0; }
@@ -58,12 +58,12 @@
   .fg-label { font-size:9px; color:var(--muted); letter-spacing:2px; text-transform:uppercase; margin-bottom:3px; }
   .fg-name { font-size:13px; font-weight:700; }
   .fg-desc { font-size:11px; color:var(--muted); margin-top:2px; }
- 
+
   /* PRICES */
   .prices-card { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:12px 14px; margin-bottom:12px; }
   .prices-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
   .prices-label { font-size:9px; color:var(--muted); letter-spacing:2px; text-transform:uppercase; }
-  .prices-time { font-size:9px; color:var(--muted); font-family:monospace; }
+  .prices-time { font-size:9px; color:var(--muted); font-family:monospace; cursor:pointer; text-decoration:underline; }
   .prices-tabs { display:flex; gap:6px; margin-bottom:10px; }
   .ptab { font-size:11px; padding:4px 10px; border-radius:6px; border:1px solid var(--border); cursor:pointer; color:var(--muted); background:var(--surface2); }
   .ptab.active { background:var(--accent); color:#000; border-color:var(--accent); font-weight:700; }
@@ -75,27 +75,33 @@
   .pi-price { font-size:13px; font-weight:600; font-family:monospace; color:var(--text); }
   .tup { color:var(--accent); background:rgba(0,255,136,0.12); }
   .tdn { color:var(--down); background:rgba(255,68,102,0.12); }
- 
+
   /* EARNINGS */
   .earnings-card { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:12px 14px; margin-bottom:12px; display:none; }
   .card-label { font-size:9px; color:var(--muted); letter-spacing:2px; text-transform:uppercase; margin-bottom:10px; }
-  .earning-item { display:flex; justify-content:space-between; align-items:center; font-size:12px; padding:4px 0; border-bottom:1px solid var(--border); }
+  .earning-item { display:flex; justify-content:space-between; align-items:center; padding:4px 0; border-bottom:1px solid var(--border); font-size:12px; }
   .earning-item:last-child { border-bottom:none; }
   .earning-ticker { font-weight:700; font-family:monospace; }
   .earning-name { color:var(--muted); font-size:11px; flex:1; margin:0 8px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   .earning-date { font-family:monospace; color:var(--sub); font-size:10px; }
- 
-  /* MAIN BTN */
-  #mainBtn { width:100%; padding:15px; background:var(--accent); color:#000; border:none; border-radius:13px; font-size:14px; font-weight:700; cursor:pointer; margin-bottom:6px; }
+
+  /* BRIEFING BTN ROW */
+  .btn-row { display:flex; gap:8px; margin-bottom:6px; }
+  #mainBtn { flex:1; padding:15px; background:var(--accent); color:#000; border:none; border-radius:13px; font-size:14px; font-weight:700; cursor:pointer; }
   #mainBtn:disabled { opacity:0.6; }
   #mainBtn.done { background:transparent; color:var(--accent); border:1px solid var(--border); }
+  #forceBtn { padding:15px 16px; background:var(--surface); border:1px solid var(--border); border-radius:13px; font-size:16px; cursor:pointer; }
   .step-indicator { font-size:11px; color:var(--muted); text-align:center; margin-bottom:10px; font-family:monospace; min-height:16px; }
- 
+
+  /* LAST UPDATED */
+  .last-updated { font-size:10px; color:var(--muted); font-family:monospace; text-align:center; margin-bottom:10px; }
+  .last-updated span { color:var(--accent); }
+
   /* TABS */
   .tabs { display:flex; gap:6px; margin-bottom:14px; }
   .tab { flex:1; padding:10px; background:var(--surface); border:1px solid var(--border); border-radius:10px; font-size:12px; font-weight:600; cursor:pointer; text-align:center; color:var(--muted); }
   .tab.active { background:var(--accent); color:#000; border-color:var(--accent); }
- 
+
   /* CONTENT */
   .empty-state { text-align:center; padding:40px 20px; color:var(--muted); }
   .empty-icon { font-size:40px; margin-bottom:12px; }
@@ -104,7 +110,7 @@
   .sl { background:var(--surface2); border-radius:5px; margin-bottom:7px; animation:shimmer 1.4s infinite; }
   @keyframes shimmer { 0%,100%{opacity:0.4} 50%{opacity:0.8} }
   .error-box { background:rgba(255,68,102,0.08); border:1px solid rgba(255,68,102,0.2); border-radius:12px; padding:14px; font-size:12px; color:var(--down); line-height:1.6; word-break:break-word; }
- 
+
   /* BRIEFING */
   #result { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:16px; }
   .l-empty { height:8px; }
@@ -122,7 +128,7 @@
   .source-tag.real { color:var(--accent); }
   .action-row { display:flex; gap:8px; margin-top:12px; }
   .action-btn { flex:1; padding:10px; background:var(--surface2); border:1px solid var(--border); border-radius:10px; font-size:12px; font-weight:600; cursor:pointer; color:var(--muted); }
- 
+
   /* HISTORY */
   .history-item { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:12px 14px; margin-bottom:8px; cursor:pointer; }
   .history-date { font-size:10px; font-family:monospace; color:var(--muted); margin-bottom:4px; }
@@ -137,7 +143,7 @@
 <div id="setupScreen">
   <div class="setup-icon">📊</div>
   <div class="setup-title">Market<span>Brief</span></div>
-  <p class="setup-sub">Tu briefing de trading diario con datos reales. Solo necesitas tu API key de Groq — todo lo demás es gratuito.</p>
+  <p class="setup-sub">Tu briefing de trading diario con datos reales. Solo necesitas tu API key de Groq.</p>
   <div class="setup-label">API Key de Groq</div>
   <input class="setup-input" type="password" id="groqKey" placeholder="gsk_..." autocomplete="off" spellcheck="false" />
   <div class="setup-label">¿Qué tradeas?</div>
@@ -155,10 +161,9 @@
 <!-- APP -->
 <div id="appScreen">
   <div class="container">
-
     <div class="header">
       <div>
-        <div class="greeting">Buenos días, trader</div>
+        <div class="greeting" id="greetingText">Buenos días, trader</div>
         <div class="title">Market<span>Brief</span></div>
       </div>
       <div class="header-right">
@@ -192,7 +197,7 @@
     <div class="prices-card">
       <div class="prices-header">
         <div class="prices-label">Precios en tiempo real</div>
-        <div class="prices-time" id="pricesTime">–</div>
+        <div class="prices-time" id="pricesTime" onclick="loadMarketData()" title="Pulsa para actualizar">– ↻</div>
       </div>
       <div class="prices-tabs">
         <div class="ptab active" id="ptab-crypto" onclick="switchPTab('crypto')">₿ Cripto</div>
@@ -219,12 +224,16 @@
     </div>
 
     <div id="tabContent-briefing">
-      <button id="mainBtn" onclick="generate()">⚡ Generar Briefing de Hoy</button>
+      <div class="btn-row">
+        <button id="mainBtn" onclick="generate(false)">⚡ Generar Briefing de Hoy</button>
+        <button id="forceBtn" onclick="generate(true)" title="Forzar actualización con noticias nuevas">🔄</button>
+      </div>
+      <div id="lastUpdated" class="last-updated" style="display:none"></div>
       <div id="stepMsg" class="step-indicator"></div>
       <div id="content">
         <div class="empty-state">
           <div class="empty-icon">📊</div>
-          <p>Pulsa el botón para recibir tu briefing completo con datos reales de mercado, calendario económico, noticias geopolíticas y análisis IA.</p>
+          <p>Pulsa el botón para recibir tu briefing completo con datos reales de mercado, calendario económico, geopolítica y análisis IA.</p>
         </div>
       </div>
     </div>
@@ -244,18 +253,20 @@
   var now      = new Date();
   var todayISO = now.toISOString().slice(0,10);
   var todayStr = now.toLocaleDateString('es-ES', {weekday:'long',year:'numeric',month:'long',day:'numeric'});
-
-  var cryptoData = [];
-  var forexData  = [];
-  var activePTab = 'crypto';
+  var cryptoData = [], forexData = [], activePTab = 'crypto';
 
   var CAT_TICKERS = {
-    indices:     'DAX, IBEX35, S&P500, Nasdaq',
-    forex:       'EUR/USD, USD/JPY, GBP/USD, AUD/USD, USD/CHF',
-    crypto:      'BTC, ETH, SOL, BNB, XRP',
-    commodities: 'Oro (XAU/USD), Petróleo (WTI)',
-    stocks:      'NVDA, AAPL, MSFT, TSLA, META'
+    indices:'DAX, IBEX35, S&P500, Nasdaq',
+    forex:'EUR/USD, USD/JPY, GBP/USD, AUD/USD, USD/CHF',
+    crypto:'BTC, ETH, SOL, BNB, XRP',
+    commodities:'Oro (XAU/USD), Petróleo (WTI)',
+    stocks:'NVDA, AAPL, MSFT, TSLA, META'
   };
+
+  // Greeting según hora
+  var h = now.getHours();
+  var greet = h < 12 ? 'Buenos días, trader' : h < 20 ? 'Buenas tardes, trader' : 'Buenas noches, trader';
+  document.getElementById('greetingText') && (document.getElementById('greetingText').textContent = greet);
 
   // Theme
   var theme = localStorage.getItem('mb_theme') || 'dark';
@@ -263,16 +274,16 @@
 
   function toggleTheme() {
     theme = theme === 'dark' ? 'light' : 'dark';
-    document.body.classList.toggle('light', theme === 'light');
-    document.getElementById('themeBtn').textContent = theme === 'dark' ? '🌙' : '☀️';
+    document.body.classList.toggle('light', theme==='light');
+    document.getElementById('themeBtn').textContent = theme==='dark'?'🌙':'☀️';
     localStorage.setItem('mb_theme', theme);
   }
 
-  document.querySelectorAll('.chip').forEach(function(c) {
+  document.querySelectorAll('.chip').forEach(function(c){
     c.addEventListener('click', function(){ this.classList.toggle('active'); });
   });
 
-  if (localStorage.getItem('mb_groq_key')) { showApp(); loadMarketData(); }
+  if (localStorage.getItem('mb_groq_key')) { showApp(); loadMarketData(); autoLoad(); }
 
   function saveKey() {
     var k = document.getElementById('groqKey').value.trim();
@@ -282,7 +293,7 @@
     if (!cats.length) { alert('Selecciona al menos una categoría'); return; }
     localStorage.setItem('mb_groq_key', k);
     localStorage.setItem('mb_categories', JSON.stringify(cats));
-    showApp(); loadMarketData();
+    showApp(); loadMarketData(); autoLoad();
   }
 
   function showApp() {
@@ -290,30 +301,49 @@
     document.getElementById('appScreen').style.display   = 'block';
     document.getElementById('dayNum').textContent   = now.getDate();
     document.getElementById('monthStr').textContent = MONTHS[now.getMonth()] + ' ' + DAYS[now.getDay()];
-    document.getElementById('themeBtn').textContent = theme === 'dark' ? '🌙' : '☀️';
+    document.getElementById('themeBtn').textContent = theme==='dark'?'🌙':'☀️';
   }
 
   function resetKey() {
-    ['mb_groq_key','mb_categories'].forEach(function(k){ localStorage.removeItem(k); });
+    ['mb_groq_key','mb_categories','mb_history'].forEach(function(k){ localStorage.removeItem(k); });
     document.getElementById('appScreen').style.display   = 'none';
     document.getElementById('setupScreen').style.display = 'flex';
   }
 
   function setStep(msg) { document.getElementById('stepMsg').textContent = msg; }
 
+  // Auto-cargar si hay briefing guardado del día de hoy
+  function autoLoad() {
+    var history = JSON.parse(localStorage.getItem('mb_history') || '[]');
+    var todayItem = history.find(function(h){ return h.date === todayISO; });
+    if (todayItem) {
+      renderBriefing(todayItem.raw, todayItem.sources, true);
+      showLastUpdated(todayItem.timestamp);
+      document.getElementById('mainBtn').textContent = '↺ Actualizar briefing';
+      document.getElementById('mainBtn').className = 'done';
+    }
+  }
+
+  function showLastUpdated(ts) {
+    if (!ts) return;
+    var d = new Date(ts);
+    var timeStr = d.toLocaleTimeString('es-ES', {hour:'2-digit', minute:'2-digit'});
+    var el = document.getElementById('lastUpdated');
+    el.innerHTML = 'Última actualización: <span>' + timeStr + '</span> · Pulsa 🔄 para refrescar';
+    el.style.display = 'block';
+  }
+
   function switchTab(tab) {
     ['briefing','history'].forEach(function(t){
       document.getElementById('tab-'+t).classList.toggle('active', t===tab);
-      document.getElementById('tabContent-'+t).style.display = t===tab ? 'block' : 'none';
+      document.getElementById('tabContent-'+t).style.display = t===tab?'block':'none';
     });
-    if (tab === 'history') renderHistory();
+    if (tab==='history') renderHistory();
   }
 
   function switchPTab(tab) {
     activePTab = tab;
-    ['crypto','forex'].forEach(function(t){
-      document.getElementById('ptab-'+t).classList.toggle('active', t===tab);
-    });
+    ['crypto','forex'].forEach(function(t){ document.getElementById('ptab-'+t).classList.toggle('active', t===tab); });
     renderPrices();
   }
 
@@ -321,78 +351,62 @@
   async function loadMarketData() {
     await Promise.allSettled([loadCrypto(), loadForex(), loadFearGreed(), loadEarnings()]);
     var t = new Date();
-    document.getElementById('pricesTime').textContent = t.getHours() + ':' + String(t.getMinutes()).padStart(2,'0');
+    document.getElementById('pricesTime').textContent = t.getHours()+':'+String(t.getMinutes()).padStart(2,'0')+' ↻';
   }
 
   async function loadCrypto() {
     try {
-      var r    = await fetch(PROXY + '?type=crypto');
-      var data = await r.json();
-      if (data.error) throw new Error(data.error);
-      cryptoData = data;
-      if (activePTab === 'crypto') renderPrices();
+      var r = await fetch(PROXY+'?type=crypto');
+      var d = await r.json();
+      if (d.error) throw new Error(d.error);
+      cryptoData = d;
+      if (activePTab==='crypto') renderPrices();
     } catch(e) {
       cryptoData = [];
-      if (activePTab === 'crypto') document.getElementById('pricesGrid').innerHTML = '<div style="color:var(--muted);font-size:11px;grid-column:1/-1">Cripto no disponible: ' + e.message + '</div>';
+      if (activePTab==='crypto') document.getElementById('pricesGrid').innerHTML = '<div style="color:var(--muted);font-size:11px;grid-column:1/-1">'+e.message+'</div>';
     }
   }
 
   async function loadForex() {
     try {
-      var r    = await fetch(PROXY + '?type=forex');
-      var data = await r.json();
-      if (data.error) throw new Error(data.error);
-      forexData = data;
-      if (activePTab === 'forex') renderPrices();
+      var r = await fetch(PROXY+'?type=forex');
+      var d = await r.json();
+      if (d.error) throw new Error(d.error);
+      forexData = d;
+      if (activePTab==='forex') renderPrices();
     } catch(e) {
       forexData = [];
-      if (activePTab === 'forex') document.getElementById('pricesGrid').innerHTML = '<div style="color:var(--muted);font-size:11px;grid-column:1/-1">Forex no disponible: ' + e.message + '</div>';
     }
   }
 
   function renderPrices() {
-    var data = activePTab === 'crypto' ? cryptoData : forexData;
-    if (!data || !data.length) {
-      document.getElementById('pricesGrid').innerHTML = '<div class="sl" style="height:52px;border-radius:8px;grid-column:1/-1"></div>';
-      return;
-    }
-    var html = '';
-    data.forEach(function(q) {
-      var chg  = q.change !== null ? parseFloat(q.change) : null;
-      var up   = chg !== null ? chg >= 0 : true;
-      var chgStr = chg !== null ? (up?'+':'') + chg.toFixed(2) + '%' : '–';
-      var price = parseFloat(q.price);
-      var priceStr = price >= 10000 ? price.toLocaleString('es-ES',{maximumFractionDigits:0})
-                   : price >= 100   ? price.toFixed(2)
-                   : price >= 1     ? price.toFixed(4)
-                   : price.toFixed(6);
-      html += '<div class="price-item">';
-      html += '<div class="pi-top"><span class="pi-sym">' + q.symbol + '</span><span class="pi-chg ' + (chg!==null?(up?'tup':'tdn'):'') + '">' + chgStr + '</span></div>';
-      html += '<div class="pi-price">' + priceStr + '</div>';
-      html += '</div>';
-    });
-    document.getElementById('pricesGrid').innerHTML = html;
+    var data = activePTab==='crypto' ? cryptoData : forexData;
+    if (!data||!data.length) { document.getElementById('pricesGrid').innerHTML='<div class="sl" style="height:52px;border-radius:8px;grid-column:1/-1"></div>'; return; }
+    document.getElementById('pricesGrid').innerHTML = data.map(function(q){
+      var chg = q.change!==null ? parseFloat(q.change) : null;
+      var up  = chg!==null ? chg>=0 : true;
+      var chgStr = chg!==null ? (up?'+':'')+chg.toFixed(2)+'%' : '–';
+      var p = parseFloat(q.price);
+      var ps = p>=10000 ? p.toLocaleString('es-ES',{maximumFractionDigits:0}) : p>=100 ? p.toFixed(2) : p>=1 ? p.toFixed(4) : p.toFixed(6);
+      return '<div class="price-item"><div class="pi-top"><span class="pi-sym">'+q.symbol+'</span><span class="pi-chg '+(chg!==null?(up?'tup':'tdn'):'')+'">'+chgStr+'</span></div><div class="pi-price">'+ps+'</div></div>';
+    }).join('');
   }
 
   async function loadFearGreed() {
     try {
-      var r    = await fetch(PROXY + '?type=feargreed');
-      var data = await r.json();
-      var item = data.data && data.data[0];
-      if (!item) return;
-      var val   = parseInt(item.value);
+      var r = await fetch(PROXY+'?type=feargreed');
+      var d = await r.json();
+      var item = d.data&&d.data[0]; if (!item) return;
+      var val = parseInt(item.value);
       var names = {'Extreme Fear':'Miedo Extremo','Fear':'Miedo','Neutral':'Neutral','Greed':'Codicia','Extreme Greed':'Codicia Extrema'};
-      var descs = {'Extreme Fear':'Mercado en pánico — oportunidad o trampa','Fear':'Inversores cautelosos — sesgo defensivo','Neutral':'Sin dirección clara','Greed':'Euforia moderada — cuidado con sobrecompra','Extreme Greed':'Euforia máxima — riesgo de corrección'};
-      var nameEs = names[item.value_classification] || item.value_classification;
-      var descEs = descs[item.value_classification] || '';
-      var color  = val<25?'#ff4466':val<45?'#ffaa00':val<55?'#aaaaaa':val<75?'#00dd77':'#00ff88';
-      var circ   = 138.2;
-      var offset = circ - (val/100)*circ;
-      document.getElementById('fgNum').textContent  = val;
-      document.getElementById('fgNum').style.color  = color;
-      document.getElementById('fgName').textContent = nameEs;
+      var descs = {'Extreme Fear':'Mercado en pánico — posible oportunidad','Fear':'Inversores cautelosos — sesgo defensivo','Neutral':'Sin dirección clara','Greed':'Euforia moderada — cuidado con sobrecompra','Extreme Greed':'Euforia máxima — riesgo de corrección'};
+      var color = val<25?'#ff4466':val<45?'#ffaa00':val<55?'#aaaaaa':val<75?'#00dd77':'#00ff88';
+      var offset = 138.2 - (val/100)*138.2;
+      document.getElementById('fgNum').textContent = val;
+      document.getElementById('fgNum').style.color = color;
+      document.getElementById('fgName').textContent = names[item.value_classification]||item.value_classification;
       document.getElementById('fgName').style.color = color;
-      document.getElementById('fgDesc').textContent = descEs;
+      document.getElementById('fgDesc').textContent = descs[item.value_classification]||'';
       document.getElementById('fgCircle').style.strokeDashoffset = offset;
       document.getElementById('fgCircle').style.stroke = color;
     } catch(e) {}
@@ -400,165 +414,179 @@
 
   async function loadEarnings() {
     try {
-      var r    = await fetch(PROXY + '?type=earnings');
-      var data = await r.json();
-      var list = data.earnings || (data.data ? data.data : null);
-      if (!list || !list.length) return;
-      var html = list.slice(0,6).map(function(e){
-        return '<div class="earning-item"><span class="earning-ticker">' + esc(e.ticker||e.symbol||'') + '</span>' +
-               '<span class="earning-name">' + esc(e.name||e.company||'') + '</span>' +
-               '<span class="earning-date">' + esc(e.date||e.report_date||'') + '</span></div>';
+      var r = await fetch(PROXY+'?type=earnings');
+      var d = await r.json();
+      var list = d.earnings||(d.data?d.data:null);
+      if (!list||!list.length) return;
+      document.getElementById('earningsList').innerHTML = list.slice(0,6).map(function(e){
+        return '<div class="earning-item"><span class="earning-ticker">'+esc(e.ticker||e.symbol||'')+'</span><span class="earning-name">'+esc(e.name||e.company||'')+'</span><span class="earning-date">'+esc(e.date||e.report_date||'')+'</span></div>';
       }).join('');
-      document.getElementById('earningsList').innerHTML = html;
       document.getElementById('earningsCard').style.display = 'block';
     } catch(e) {}
   }
 
   // ── GENERATE ─────────────────────────────────────────────────────
-  var NEWS_TOPICS = [
-    { topic:'mercados financieros bolsa economia',   label:'Google News Mercados' },
-    { topic:'geopolitica guerra conflicto economia', label:'Google News Geopolítica' },
-    { topic:'fed bce banco central tipos interes',   label:'Google News Bancos Centrales' },
-    { topic:'petroleo opep energia materias primas', label:'Google News Energía' }
-  ];
-
   function impactLabel(i) {
-    if (i==='High')   return '🔴 ALTO';
+    if (i==='High') return '🔴 ALTO';
     if (i==='Medium') return '🟡 MEDIO';
     return '⚪ BAJO';
   }
 
-  async function generate() {
+  async function generate(force) {
     var groqKey    = localStorage.getItem('mb_groq_key');
-    var categories = JSON.parse(localStorage.getItem('mb_categories') || '["indices","forex","crypto","commodities","stocks"]');
+    var categories = JSON.parse(localStorage.getItem('mb_categories')||'["indices","forex","crypto","commodities","stocks"]');
     if (!groqKey) { resetKey(); return; }
 
-    var btn     = document.getElementById('mainBtn');
+    // Si no es forzado y ya hay briefing de hoy, mostrar el guardado
+    if (!force) {
+      var history = JSON.parse(localStorage.getItem('mb_history')||'[]');
+      var todayItem = history.find(function(h){ return h.date===todayISO; });
+      if (todayItem && todayItem.raw) {
+        renderBriefing(todayItem.raw, todayItem.sources, true);
+        showLastUpdated(todayItem.timestamp);
+        document.getElementById('mainBtn').textContent = '↺ Actualizar briefing';
+        document.getElementById('mainBtn').className = 'done';
+        return;
+      }
+    }
+
+    var btn = document.getElementById('mainBtn');
     var content = document.getElementById('content');
     btn.disabled=true; btn.className=''; btn.textContent='⏳ Cargando...';
+    document.getElementById('lastUpdated').style.display = 'none';
     content.innerHTML = '<div class="skel"><div class="sl" style="width:30%;height:10px"></div><div class="sl" style="width:85%;height:15px;margin-top:4px"></div><div class="sl" style="width:95%;height:10px"></div></div>'.repeat(3);
 
     var calendarText='', newsText='', fgText='', activeSources=[];
-
     setStep('📅 Cargando datos...');
 
     var reqs = [
       fetch(PROXY+'?type=calendar').then(function(r){return r.json();}).catch(function(){return null;}),
-      fetch(PROXY+'?type=feargreed').then(function(r){return r.json();}).catch(function(){return null;})
+      fetch(PROXY+'?type=feargreed').then(function(r){return r.json();}).catch(function(){return null;}),
+      fetch(PROXY+'?type=finnhub_news').then(function(r){return r.json();}).catch(function(){return null;}),
+      fetch(PROXY+'?type=finnhub_forex').then(function(r){return r.json();}).catch(function(){return null;}),
+      fetch(PROXY+'?type=finnhub_crypto').then(function(r){return r.json();}).catch(function(){return null;}),
+      fetch(PROXY+'?type=geopolitics').then(function(r){return r.json();}).catch(function(){return null;})
     ];
-    NEWS_TOPICS.forEach(function(t){
-      reqs.push(fetch(PROXY+'?type=news&topic='+encodeURIComponent(t.topic))
-        .then(function(r){return r.json();})
-        .then(function(d){return {label:t.label,data:d};})
-        .catch(function(){return null;}));
-    });
 
     var results = await Promise.allSettled(reqs);
 
     // Calendario
     var calRes = results[0];
-    if (calRes.status==='fulfilled' && calRes.value && !calRes.value.error) {
-      var events   = calRes.value;
-      var todayEv  = events.filter(function(e){return e.date&&e.date.slice(0,10)===todayISO;});
-      var highWeek = events.filter(function(e){return e.impact==='High'&&e.date&&e.date.slice(0,10)!==todayISO;});
+    if (calRes.status==='fulfilled'&&calRes.value&&!calRes.value.error) {
+      var events=calRes.value;
+      var todayEv=events.filter(function(e){return e.date&&e.date.slice(0,10)===todayISO;});
+      var highWeek=events.filter(function(e){return e.impact==='High'&&e.date&&e.date.slice(0,10)!==todayISO;});
       if (todayEv.length>0) {
         activeSources.push('ForexFactory');
-        calendarText += '=== EVENTOS HOY ('+todayISO+') ===\n';
+        calendarText+='=== EVENTOS HOY ('+todayISO+') ===\n';
         todayEv.forEach(function(e){
-          calendarText += impactLabel(e.impact)+' | '+e.country+' | '+e.title;
-          if (e.time)     calendarText += ' | '+e.time;
-          if (e.forecast) calendarText += ' | Prev: '+e.forecast;
-          if (e.previous) calendarText += ' | Ant: '+e.previous;
-          if (e.actual)   calendarText += ' | Real: '+e.actual;
-          calendarText += '\n';
+          calendarText+=impactLabel(e.impact)+' | '+e.country+' | '+e.title;
+          if(e.time) calendarText+=' | '+e.time;
+          if(e.forecast) calendarText+=' | Prev: '+e.forecast;
+          if(e.previous) calendarText+=' | Ant: '+e.previous;
+          if(e.actual) calendarText+=' | Real: '+e.actual;
+          calendarText+='\n';
         });
       }
       if (highWeek.length>0) {
-        calendarText += '\n=== ALTO IMPACTO ESTA SEMANA ===\n';
+        calendarText+='\n=== ALTO IMPACTO ESTA SEMANA ===\n';
         highWeek.slice(0,6).forEach(function(e){
-          calendarText += '🔴 '+e.country+' | '+e.title+' | '+e.date.slice(0,10);
-          if (e.forecast) calendarText += ' | Prev: '+e.forecast;
-          if (e.previous) calendarText += ' | Ant: '+e.previous;
-          calendarText += '\n';
+          calendarText+='🔴 '+e.country+' | '+e.title+' | '+e.date.slice(0,10);
+          if(e.forecast) calendarText+=' | Prev: '+e.forecast;
+          if(e.previous) calendarText+=' | Ant: '+e.previous;
+          calendarText+='\n';
         });
       }
     }
 
     // Fear & Greed
-    var fgRes = results[1];
-    if (fgRes.status==='fulfilled' && fgRes.value && fgRes.value.data) {
-      var fg = fgRes.value.data[0];
-      if (fg) {
-        fgText = 'Fear & Greed Index: '+fg.value+'/100 ('+fg.value_classification+')';
-        activeSources.push('Fear & Greed Index');
-      }
+    var fgRes=results[1];
+    if (fgRes.status==='fulfilled'&&fgRes.value&&fgRes.value.data) {
+      var fg=fgRes.value.data[0];
+      if (fg) { fgText='Fear & Greed Index: '+fg.value+'/100 ('+fg.value_classification+')'; activeSources.push('Fear & Greed'); }
     }
 
-    // Precios reales para el prompt
-    var pricesText = '';
-    if (cryptoData.length) {
-      pricesText += 'CRIPTO: ' + cryptoData.map(function(q){ return q.symbol+' $'+parseFloat(q.price).toLocaleString('en-US',{maximumFractionDigits:2})+' ('+(q.change>=0?'+':'')+parseFloat(q.change).toFixed(2)+'%)'; }).join(', ') + '\n';
-    }
-    if (forexData.length) {
-      pricesText += 'FOREX: ' + forexData.map(function(q){ return q.symbol+' '+parseFloat(q.price).toFixed(4)+(q.change!==null?' ('+(q.change>=0?'+':'')+parseFloat(q.change).toFixed(2)+'%)':''); }).join(', ') + '\n';
-    }
-
-    // Noticias
-    for (var r=2;r<results.length;r++){
-      var res=results[r];
-      if (res.status==='fulfilled'&&res.value&&res.value.data&&res.value.data.items&&res.value.data.items.length){
-        var feed=res.value;
-        activeSources.push(feed.label);
-        newsText += '\n--- '+feed.label.toUpperCase()+' ---\n';
-        feed.data.items.forEach(function(item){
-          newsText += '• '+item.title+'\n';
-          if (item.description) newsText += '  '+item.description+'\n';
+    // Finnhub noticias (idx 2,3,4)
+    var finnhubLabels = ['Finnhub Mercados','Finnhub Forex','Finnhub Cripto'];
+    [2,3,4].forEach(function(idx){
+      var res=results[idx];
+      if (res.status==='fulfilled'&&Array.isArray(res.value)&&res.value.length) {
+        activeSources.push(finnhubLabels[idx-2]);
+        newsText+='\n--- '+finnhubLabels[idx-2].toUpperCase()+' ---\n';
+        res.value.forEach(function(n){
+          newsText+='• '+n.headline+' ['+n.source+', '+n.date+']\n';
+          if(n.summary) newsText+='  '+n.summary+'\n';
         });
       }
+    });
+
+    // Geopolítica multi-fuente (idx 5)
+    var geoRes=results[5];
+    if (geoRes.status==='fulfilled'&&Array.isArray(geoRes.value)&&geoRes.value.length) {
+      geoRes.value.forEach(function(feed){
+        if (feed.items&&feed.items.length) {
+          activeSources.push(feed.source);
+          newsText+='\n--- '+feed.source.toUpperCase()+' ---\n';
+          feed.items.forEach(function(item){
+            newsText+='• '+item.title;
+            if(item.date) newsText+=' ['+item.date+']';
+            newsText+='\n';
+            if(item.summary) newsText+='  '+item.summary+'\n';
+          });
+        }
+      });
     }
 
-    var hasReal = calendarText.length>0||newsText.length>0;
-    var userTickers = categories.map(function(c){return CAT_TICKERS[c]||'';}).filter(Boolean).join(', ');
+    // Precios reales
+    var pricesText='';
+    if (cryptoData.length) pricesText+='CRIPTO: '+cryptoData.map(function(q){return q.symbol+' $'+parseFloat(q.price).toLocaleString('en-US',{maximumFractionDigits:2})+' ('+(q.change>=0?'+':'')+parseFloat(q.change).toFixed(2)+'%)';}).join(', ')+'\n';
+    if (forexData.length) pricesText+='FOREX: '+forexData.map(function(q){return q.symbol+' '+parseFloat(q.price).toFixed(4)+(q.change!==null?' ('+(q.change>=0?'+':'')+parseFloat(q.change).toFixed(2)+'%)':'');}).join(', ')+'\n';
+
+    var hasReal=calendarText.length>0||newsText.length>0;
+    var userTickers=categories.map(function(c){return CAT_TICKERS[c]||'';}).filter(Boolean).join(', ');
+    var currentTime=now.toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'});
 
     setStep('🤖 Analizando con IA...');
 
-    var prompt = 'Hoy es '+todayStr+'. Genera un briefing de trading detallado en español correcto.\n\n';
-    if (fgText)       prompt += '=== SENTIMIENTO ===\n'+fgText+'\n\n';
-    if (pricesText)   prompt += '=== PRECIOS REALES AHORA ===\n'+pricesText+'\n';
-    if (calendarText) prompt += '=== CALENDARIO ECONÓMICO (ForexFactory) ===\n'+calendarText+'\n';
-    if (newsText)     prompt += '=== NOTICIAS DE HOY ===\n'+newsText+'\n';
-    if (!hasReal)     prompt += 'Usa tu conocimiento actualizado.\n\n';
-    prompt += '\nEl trader opera: '+categories.join(', ')+'. Activos: '+userTickers+'\n\n';
-    prompt += 'IMPORTANTE: Sin asteriscos ni markdown. Solo texto plano.\n\n';
-    prompt += '🎯 RESUMEN EJECUTIVO\n[3-4 frases con lo más importante del día para este trader]\n\n';
-    prompt += '📡 CONTEXTO DE LA SEMANA\n[4-5 frases del contexto macro global]\n\n';
-    prompt += '🌍 GEOPOLÍTICA Y RIESGO\n[4-5 frases sobre tensiones actuales y su impacto en mercados]\n\n';
-    prompt += '😨 SENTIMIENTO DEL MERCADO\n[Explica qué significa el Fear & Greed actual y cómo afecta a la sesión de hoy]\n\n';
-    prompt += '⚡ SESIÓN DE HOY\n• Sentimiento: [Risk-on/Risk-off/Mixto — por qué]\n• Volatilidad: [Alta/Media/Baja — por qué]\n• Sesiones activas: [cuáles están abiertas]\n• Consejo del día: [consejo concreto y razonado]\n\n';
-    prompt += '📰 EVENTOS Y NOTICIAS CLAVE\n\n';
-    prompt += '1. [TÍTULO] — Impacto: [ALTO/MEDIO/BAJO]\n📅 [hora o día]\n[4-5 frases explicando el evento]\nPrevisión: [dato] | Anterior: [dato]\nActivos afectados: [↑ o ↓ o → TICKER — razón]\n\n';
-    prompt += '2. [igual]\n3. [igual]\n4. [igual]\n5. [igual]\n\nSin asteriscos ni markdown.';
+    var prompt='Hoy es '+todayStr+' a las '+currentTime+'. Genera un briefing de trading detallado en español correcto.\n\n';
+    if (fgText)       prompt+='=== SENTIMIENTO ===\n'+fgText+'\n\n';
+    if (pricesText)   prompt+='=== PRECIOS REALES AHORA ===\n'+pricesText+'\n';
+    if (calendarText) prompt+='=== CALENDARIO ECONÓMICO (ForexFactory) ===\n'+calendarText+'\n';
+    if (newsText)     prompt+='=== NOTICIAS Y GEOPOLÍTICA HOY ===\n'+newsText+'\n';
+    if (!hasReal)     prompt+='Usa tu conocimiento actualizado.\n\n';
+    prompt+='\nEl trader opera: '+categories.join(', ')+'. Activos: '+userTickers+'\n\n';
+    prompt+='IMPORTANTE: Sin asteriscos ni markdown. Solo texto plano.\n\n';
+    prompt+='🎯 RESUMEN EJECUTIVO\n[3-4 frases con lo más importante del día]\n\n';
+    prompt+='📡 CONTEXTO DE LA SEMANA\n[4-5 frases del contexto macro global]\n\n';
+    prompt+='🌍 GEOPOLÍTICA Y RIESGO\n[4-5 frases sobre tensiones actuales con fuentes reales si las tienes. Explica cómo afectan a los mercados hoy]\n\n';
+    prompt+='😨 SENTIMIENTO DEL MERCADO\n[Explica el Fear & Greed actual y qué implica para operar hoy]\n\n';
+    prompt+='⚡ SESIÓN DE HOY\n• Sentimiento: [Risk-on/Risk-off/Mixto — por qué]\n• Volatilidad: [Alta/Media/Baja — por qué]\n• Sesiones activas: [cuáles están abiertas ahora mismo]\n• Consejo del día: [consejo concreto y razonado]\n\n';
+    prompt+='📰 EVENTOS Y NOTICIAS CLAVE\n\n';
+    prompt+='1. [TÍTULO] — Impacto: [ALTO/MEDIO/BAJO]\n📅 [hora o día]\n[4-5 frases explicando el evento, qué se espera y qué pasa si sale mejor/peor]\nPrevisión: [dato] | Anterior: [dato]\nActivos afectados: [↑ o ↓ o → TICKER — razón]\n\n';
+    prompt+='2. [igual]\n3. [igual]\n4. [igual]\n5. [igual]\n\nSin asteriscos ni markdown.';
 
     try {
-      var groqRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      var groqRes=await fetch('https://api.groq.com/openai/v1/chat/completions',{
         method:'POST',
         headers:{'Content-Type':'application/json','Authorization':'Bearer '+groqKey},
-        body: JSON.stringify({
+        body:JSON.stringify({
           model:'llama-3.3-70b-versatile', max_tokens:2500,
           messages:[
-            {role:'system', content:'Eres un analista senior de mercados financieros. Produces briefings detallados, profesionales y accionables en español correcto. NUNCA uses asteriscos ni markdown. Cuando tienes precios reales y datos reales los incluyes y explicas en profundidad.'},
-            {role:'user', content:prompt}
+            {role:'system',content:'Eres un analista senior de mercados financieros. Produces briefings detallados, profesionales y accionables en español correcto. NUNCA uses asteriscos ni markdown. Usas siempre los datos reales que te dan, especialmente las noticias geopolíticas y financieras, citando las fuentes cuando puedas.'},
+            {role:'user',content:prompt}
           ]
         })
       });
       if (!groqRes.ok) { var err=await groqRes.json(); throw new Error(err.error&&err.error.message?err.error.message:'Groq HTTP '+groqRes.status); }
-      var data = await groqRes.json();
-      var raw  = data.choices&&data.choices[0]&&data.choices[0].message&&data.choices[0].message.content;
+      var data=await groqRes.json();
+      var raw=data.choices&&data.choices[0]&&data.choices[0].message&&data.choices[0].message.content;
       if (!raw) throw new Error('Respuesta vacía');
 
-      saveToHistory(raw, activeSources);
+      var ts = Date.now();
+      saveToHistory(raw, activeSources, ts);
       setStep('');
       renderBriefing(raw, activeSources, hasReal);
+      showLastUpdated(ts);
       btn.textContent='↺ Actualizar briefing'; btn.className='done'; btn.disabled=false;
       loadMarketData();
 
@@ -570,48 +598,50 @@
   }
 
   // ── HISTORY ──────────────────────────────────────────────────────
-  function saveToHistory(text, sources) {
-    var h = JSON.parse(localStorage.getItem('mb_history')||'[]');
-    h = h.filter(function(x){return x.date!==todayISO;});
-    h.unshift({date:todayISO,dateStr:todayStr,text:text,sources:sources});
+  function saveToHistory(raw, sources, timestamp) {
+    var h=JSON.parse(localStorage.getItem('mb_history')||'[]');
+    h=h.filter(function(x){return x.date!==todayISO;});
+    h.unshift({date:todayISO, dateStr:todayStr, raw:raw, sources:sources, timestamp:timestamp});
     localStorage.setItem('mb_history', JSON.stringify(h.slice(0,7)));
   }
 
   function renderHistory() {
-    var h  = JSON.parse(localStorage.getItem('mb_history')||'[]');
-    var el = document.getElementById('historyList');
+    var h=JSON.parse(localStorage.getItem('mb_history')||'[]');
+    var el=document.getElementById('historyList');
     if (!h.length) { el.innerHTML='<div class="history-empty">No hay briefings guardados todavía.</div>'; return; }
-    el.innerHTML = h.map(function(item,i){
-      var preview = (item.text.split('\n').find(function(l){return l.trim().length>30;})||'').replace(/\*\*/g,'').trim().slice(0,90)+'...';
+    el.innerHTML=h.map(function(item,i){
+      var preview=(item.raw||item.text||'').split('\n').find(function(l){return l.trim().length>30;})||'';
+      preview=preview.replace(/\*\*/g,'').trim().slice(0,90)+'...';
+      var ts=item.timestamp?new Date(item.timestamp).toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'}):'';
       return '<div class="history-item" onclick="showHistoryItem('+i+')">' +
-        '<div class="history-date">📅 '+item.dateStr+'</div>' +
+        '<div class="history-date">📅 '+item.dateStr+(ts?' · '+ts:'')+'</div>' +
         '<div class="history-preview">'+esc(preview)+'</div></div>';
     }).join('');
   }
 
   function showHistoryItem(i) {
-    var h = JSON.parse(localStorage.getItem('mb_history')||'[]')[i];
+    var h=JSON.parse(localStorage.getItem('mb_history')||'[]')[i];
     if (!h) return;
     switchTab('briefing');
-    renderBriefing(h.text, h.sources, true);
+    renderBriefing(h.raw||h.text, h.sources, true);
+    if (h.timestamp) showLastUpdated(h.timestamp);
   }
 
   // ── RENDER ────────────────────────────────────────────────────────
   function renderBriefing(raw, sources, hasReal) {
-    var lines = raw.split('\n');
-    var html  = '<div id="result">';
+    var lines=raw.split('\n');
+    var html='<div id="result">';
     for (var i=0;i<lines.length;i++) {
-      var t = lines[i].trim();
-      if (!t) { html+='<div class="l-empty"></div>'; continue; }
-      if (/^(🎯|📡|⚡|📰|🌍|😨)/.test(t))   html+='<div class="l-section">'+esc(t)+'</div>';
-      else if (/^\d+\./.test(t))             html+='<div class="l-noticia">'+esc(t)+'</div>';
-      else if (t.indexOf('ALTO')>-1)         html+='<div class="l-alto">'+esc(t)+'</div>';
-      else if (t.indexOf('MEDIO')>-1)        html+='<div class="l-medio">'+esc(t)+'</div>';
-      else if (t.indexOf('BAJO')>-1)         html+='<div class="l-bajo">'+esc(t)+'</div>';
+      var t=lines[i].trim(); if (!t){html+='<div class="l-empty"></div>';continue;}
+      if (/^(🎯|📡|⚡|📰|🌍|😨)/.test(t)) html+='<div class="l-section">'+esc(t)+'</div>';
+      else if (/^\d+\./.test(t))            html+='<div class="l-noticia">'+esc(t)+'</div>';
+      else if (t.indexOf('ALTO')>-1)        html+='<div class="l-alto">'+esc(t)+'</div>';
+      else if (t.indexOf('MEDIO')>-1)       html+='<div class="l-medio">'+esc(t)+'</div>';
+      else if (t.indexOf('BAJO')>-1)        html+='<div class="l-bajo">'+esc(t)+'</div>';
       else if (t.indexOf('Activos')===0||t.indexOf('Previsión')===0) html+='<div class="l-activos">'+esc(t)+'</div>';
-      else if (t.indexOf('•')===0)           html+='<div class="l-bullet">'+esc(t)+'</div>';
-      else if (t.indexOf('📅')===0)          html+='<div class="l-fecha">'+esc(t)+'</div>';
-      else                                   html+='<div class="l-normal">'+esc(t)+'</div>';
+      else if (t.indexOf('•')===0)          html+='<div class="l-bullet">'+esc(t)+'</div>';
+      else if (t.indexOf('📅')===0)         html+='<div class="l-fecha">'+esc(t)+'</div>';
+      else                                  html+='<div class="l-normal">'+esc(t)+'</div>';
     }
     if (hasReal&&sources&&sources.length) {
       html+='<div class="source-tag real">✅ Fuentes: '+esc([...new Set(sources)].join(' · '))+'</div>';
@@ -619,18 +649,18 @@
       html+='<div class="source-tag">🤖 Generado por IA</div>';
     }
     html+='<div class="action-row"><button class="action-btn" onclick="shareBriefing()">📤 Compartir</button><button class="action-btn" onclick="copyBriefing()">📋 Copiar</button></div></div>';
-    document.getElementById('content').innerHTML = html;
-    window._lastRaw = raw;
+    document.getElementById('content').innerHTML=html;
+    window._lastRaw=raw;
   }
 
   function shareBriefing() {
-    var text=(window._lastRaw||'').replace(/\*\*/g,'').slice(0,1000)+'\n\n— MarketBrief';
-    if (navigator.share) navigator.share({title:'MarketBrief '+todayISO,text:text});
+    var t=(window._lastRaw||'').replace(/\*\*/g,'').slice(0,1000)+'\n\n— MarketBrief';
+    if (navigator.share) navigator.share({title:'MarketBrief '+todayISO,text:t});
     else copyBriefing();
   }
   function copyBriefing() {
-    var text=(window._lastRaw||'').replace(/\*\*/g,'');
-    navigator.clipboard&&navigator.clipboard.writeText(text);
+    var t=(window._lastRaw||'').replace(/\*\*/g,'');
+    navigator.clipboard&&navigator.clipboard.writeText(t);
   }
 
   function esc(s) {
