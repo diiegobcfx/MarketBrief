@@ -459,13 +459,18 @@
     var calendarText='', newsText='', fgText='', activeSources=[];
     setStep('📅 Cargando datos...');
 
+    // idx: 0=calendar,1=feargreed,2=finnhub_news,3=finnhub_forex,4=finnhub_crypto,5=geopolitics,6=fred,7=apitube_fin,8=apitube_geo,9=av_news
     var reqs = [
       fetch(PROXY+'?type=calendar').then(function(r){return r.json();}).catch(function(){return null;}),
       fetch(PROXY+'?type=feargreed').then(function(r){return r.json();}).catch(function(){return null;}),
       fetch(PROXY+'?type=finnhub_news').then(function(r){return r.json();}).catch(function(){return null;}),
       fetch(PROXY+'?type=finnhub_forex').then(function(r){return r.json();}).catch(function(){return null;}),
       fetch(PROXY+'?type=finnhub_crypto').then(function(r){return r.json();}).catch(function(){return null;}),
-      fetch(PROXY+'?type=geopolitics').then(function(r){return r.json();}).catch(function(){return null;})
+      fetch(PROXY+'?type=geopolitics').then(function(r){return r.json();}).catch(function(){return null;}),
+      fetch(PROXY+'?type=fred').then(function(r){return r.json();}).catch(function(){return null;}),
+      fetch(PROXY+'?type=apitube_financial').then(function(r){return r.json();}).catch(function(){return null;}),
+      fetch(PROXY+'?type=apitube_geopolitics').then(function(r){return r.json();}).catch(function(){return null;}),
+      fetch(PROXY+'?type=av_news').then(function(r){return r.json();}).catch(function(){return null;})
     ];
 
     var results = await Promise.allSettled(reqs);
@@ -520,7 +525,7 @@
       }
     });
 
-    // Geopolítica multi-fuente (idx 5)
+    // Geopolítica RSS (idx 5)
     var geoRes=results[5];
     if (geoRes.status==='fulfilled'&&Array.isArray(geoRes.value)&&geoRes.value.length) {
       geoRes.value.forEach(function(feed){
@@ -537,12 +542,60 @@
       });
     }
 
+    // FRED macro data (idx 6)
+    var fredRes=results[6];
+    var fredText='';
+    if (fredRes.status==='fulfilled'&&fredRes.value&&!fredRes.value.error) {
+      var macro=fredRes.value;
+      fredText='=== DATOS MACRO REALES (Federal Reserve - FRED) ===\n';
+      Object.values(macro).forEach(function(m){
+        fredText+=m.label+': '+m.value+' ('+m.date+')';
+        if (m.prev) fredText+=' | anterior: '+m.prev+' ('+m.prevDate+')';
+        fredText+='\n';
+      });
+      activeSources.push('FRED (Federal Reserve)');
+    }
+
+    // APITube noticias financieras (idx 7)
+    var apiFinRes=results[7];
+    if (apiFinRes.status==='fulfilled'&&Array.isArray(apiFinRes.value)&&apiFinRes.value.length) {
+      activeSources.push('APITube Financial');
+      newsText+='\n--- APITUBE NOTICIAS FINANCIERAS ---\n';
+      apiFinRes.value.forEach(function(a){
+        newsText+='• '+a.title+' ['+a.source+(a.sentiment?' | sentimiento: '+a.sentiment:'')+']\n';
+        if(a.summary) newsText+='  '+a.summary+'\n';
+      });
+    }
+
+    // APITube geopolítica (idx 8)
+    var apiGeoRes=results[8];
+    if (apiGeoRes.status==='fulfilled'&&Array.isArray(apiGeoRes.value)&&apiGeoRes.value.length) {
+      activeSources.push('APITube Geopolitics');
+      newsText+='\n--- APITUBE GEOPOLITICA ---\n';
+      apiGeoRes.value.forEach(function(a){
+        newsText+='• '+a.title+' ['+a.source+(a.sentiment?' | sentimiento: '+a.sentiment:'')+']\n';
+        if(a.summary) newsText+='  '+a.summary+'\n';
+      });
+    }
+
+    // Alpha Vantage noticias con sentimiento IA (idx 9)
+    var avRes=results[9];
+    var avText='';
+    if (avRes.status==='fulfilled'&&Array.isArray(avRes.value)&&avRes.value.length) {
+      activeSources.push('Alpha Vantage Sentiment');
+      avText='=== NOTICIAS CON SENTIMIENTO IA (Alpha Vantage) ===\n';
+      avRes.value.forEach(function(a){
+        avText+='• '+a.title+' ['+a.source+', sentimiento: '+(a.overall_sentiment||'neutral')+']\n';
+        if(a.summary) avText+='  '+a.summary+'\n';
+      });
+    }
+
     // Precios reales
     var pricesText='';
     if (cryptoData.length) pricesText+='CRIPTO: '+cryptoData.map(function(q){return q.symbol+' $'+parseFloat(q.price).toLocaleString('en-US',{maximumFractionDigits:2})+' ('+(q.change>=0?'+':'')+parseFloat(q.change).toFixed(2)+'%)';}).join(', ')+'\n';
     if (forexData.length) pricesText+='FOREX: '+forexData.map(function(q){return q.symbol+' '+parseFloat(q.price).toFixed(4)+(q.change!==null?' ('+(q.change>=0?'+':'')+parseFloat(q.change).toFixed(2)+'%)':'');}).join(', ')+'\n';
 
-    var hasReal=calendarText.length>0||newsText.length>0;
+    var hasReal=calendarText.length>0||newsText.length>0||fredText.length>0||avText.length>0;
     var userTickers=categories.map(function(c){return CAT_TICKERS[c]||'';}).filter(Boolean).join(', ');
     var currentTime=now.toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'});
 
@@ -551,7 +604,9 @@
     var prompt='Hoy es '+todayStr+' a las '+currentTime+'. Genera un briefing de trading detallado en español correcto.\n\n';
     if (fgText)       prompt+='=== SENTIMIENTO ===\n'+fgText+'\n\n';
     if (pricesText)   prompt+='=== PRECIOS REALES AHORA ===\n'+pricesText+'\n';
+    if (fredText)     prompt+='\n'+fredText+'\n';
     if (calendarText) prompt+='=== CALENDARIO ECONÓMICO (ForexFactory) ===\n'+calendarText+'\n';
+    if (avText)       prompt+='\n'+avText+'\n';
     if (newsText)     prompt+='=== NOTICIAS Y GEOPOLÍTICA HOY ===\n'+newsText+'\n';
     if (!hasReal)     prompt+='Usa tu conocimiento actualizado.\n\n';
     prompt+='\nEl trader opera: '+categories.join(', ')+'. Activos: '+userTickers+'\n\n';
