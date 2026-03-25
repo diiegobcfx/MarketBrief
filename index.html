@@ -510,7 +510,10 @@
       fetch(PROXY+'?type=apitube_geopolitics').then(function(r){return r.json();}).catch(function(){return null;}),
       fetch(PROXY+'?type=av_news').then(function(r){return r.json();}).catch(function(){return null;}),
       fetch(PROXY+'?type=central_banks').then(function(r){return r.json();}).catch(function(){return null;}),
-      fetch(PROXY+'?type=global_stocks').then(function(r){return r.json();}).catch(function(){return null;})
+      fetch(PROXY+'?type=global_stocks').then(function(r){return r.json();}).catch(function(){return null;}),
+      fetch(PROXY+'?type=wsb').then(function(r){return r.json();}).catch(function(){return null;}),
+      fetch(PROXY+'?type=cbr').then(function(r){return r.json();}).catch(function(){return null;}),
+      fetch(PROXY+'?type=nbp').then(function(r){return r.json();}).catch(function(){return null;})
     ];
 
     var results = await Promise.allSettled(reqs);
@@ -667,12 +670,52 @@
       });
     }
 
+    // WallStreetBets Reddit Sentiment (idx 12)
+    var wsbText='';
+    var wsbRes=results[12];
+    if (wsbRes&&wsbRes.status==='fulfilled'&&wsbRes.value&&!wsbRes.value.error) {
+      var wsb=wsbRes.value;
+      if (wsb.stocks&&wsb.stocks.length) {
+        activeSources.push('WallStreetBets (Reddit)');
+        wsbText+='=== SENTIMIENTO REDDIT WALLSTREETBETS (acciones mas mencionadas) ===\n';
+        wsb.stocks.slice(0,10).forEach(function(s){
+          var diff = s.mentions_24h_ago ? (s.mentions - s.mentions_24h_ago) : 0;
+          var trend = diff > 0 ? '↑' : diff < 0 ? '↓' : '→';
+          wsbText += trend+' '+s.ticker+(s.name?' ('+s.name+')':'')+' | menciones: '+s.mentions+' | upvotes: '+s.upvotes+'\n';
+        });
+      }
+      if (wsb.crypto&&wsb.crypto.length) {
+        wsbText+='\nSentimiento Reddit CRIPTO mas mencionadas:\n';
+        wsb.crypto.slice(0,8).forEach(function(s){
+          wsbText += '• '+s.ticker+' | menciones: '+s.mentions+' | upvotes: '+s.upvotes+'\n';
+        });
+      }
+    }
+
+    // Banco de Rusia (idx 13) — tipos de cambio oficiales
+    var cbrText='';
+    var cbrRes=results[13];
+    if (cbrRes&&cbrRes.status==='fulfilled'&&Array.isArray(cbrRes.value)&&cbrRes.value.length) {
+      activeSources.push('Banco de Rusia (CBR)');
+      cbrText='=== TIPOS DE CAMBIO BANCO DE RUSIA (CBR) ===\n';
+      cbrRes.value.forEach(function(r){ cbrText+=r.pair+': '+r.rate+'\n'; });
+    }
+
+    // NBP Polonia (idx 14)
+    var nbpText='';
+    var nbpRes=results[14];
+    if (nbpRes&&nbpRes.status==='fulfilled'&&Array.isArray(nbpRes.value)&&nbpRes.value.length) {
+      activeSources.push('Banco Nacional de Polonia (NBP)');
+      nbpText='=== TIPOS DE CAMBIO POLONIA (NBP) ===\n';
+      nbpRes.value.forEach(function(r){ if(r.rate) nbpText+=r.pair+': '+r.rate+'\n'; });
+    }
+
     // Precios reales
     var pricesText='';
     if (cryptoData.length) pricesText+='CRIPTO: '+cryptoData.map(function(q){return q.symbol+' $'+parseFloat(q.price).toLocaleString('en-US',{maximumFractionDigits:2})+' ('+(q.change>=0?'+':'')+parseFloat(q.change).toFixed(2)+'%)';}).join(', ')+'\n';
     if (forexData.length) pricesText+='FOREX: '+forexData.map(function(q){return q.symbol+' '+parseFloat(q.price).toFixed(4)+(q.change!==null?' ('+(q.change>=0?'+':'')+parseFloat(q.change).toFixed(2)+'%)':'');}).join(', ')+'\n';
 
-    var hasReal=calendarText.length>0||newsText.length>0||fredText.length>0||avText.length>0||centralBanksText.length>0||globalStocksText.length>0;
+    var hasReal=calendarText.length>0||newsText.length>0||fredText.length>0||avText.length>0||centralBanksText.length>0||globalStocksText.length>0||wsbText.length>0;
     var userTickers=categories.map(function(c){return CAT_TICKERS[c]||'';}).filter(Boolean).join(', ');
     var currentTime=now.toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'});
 
@@ -697,7 +740,10 @@
     if (calendarText)      prompt+='=== CALENDARIO ECONÓMICO (ForexFactory) ===\n'+calendarText+'\n';
     if (globalStocksText)  prompt+=globalStocksText+'\n';
     if (avText)            prompt+=avText+'\n';
-    if (newsText)          prompt+='=== NOTICIAS Y GEOPOLÍTICA HOY ===\n'+newsText+'\n';
+    if (wsbText)           prompt+=wsbText+'\n';
+    if (cbrText)           prompt+=cbrText+'\n';
+    if (nbpText)           prompt+=nbpText+'\n';
+    if (newsText)          prompt+='=== NOTICIAS Y GEOPOLITICA HOY ===\n'+newsText+'\n';
     if (!hasReal)          prompt+='Usa tu conocimiento actualizado.\n\n';
 
     // Instrucciones específicas por mercado y estilo
