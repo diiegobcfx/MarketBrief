@@ -601,7 +601,18 @@
 
     setStep('🤖 Analizando con IA...');
 
-    var prompt='Hoy es '+todayStr+' a las '+currentTime+'. Genera un briefing de trading detallado en español correcto.\n\n';
+    // Determinar sesión activa real según hora actual
+    var sessionHour = now.getUTCHours();
+    var activeSessions = '';
+    if (sessionHour >= 22 || sessionHour < 7)  activeSessions = 'Sesión Tokio/Asia activa. Europa y Nueva York cerradas.';
+    else if (sessionHour >= 7 && sessionHour < 9)  activeSessions = 'Pre-apertura Europa. Asia cerrando. Nueva York cerrada.';
+    else if (sessionHour >= 9 && sessionHour < 13) activeSessions = 'Sesión Londres/Europa activa. Nueva York cerrada.';
+    else if (sessionHour >= 13 && sessionHour < 17) activeSessions = 'Sesión Londres y Nueva York abiertas simultáneamente — mayor volumen del día.';
+    else if (sessionHour >= 17 && sessionHour < 22) activeSessions = 'Sesión Nueva York activa. Europa cerrando o cerrada.';
+
+    var prompt='Hoy es '+todayStr+' a las '+currentTime+' (hora España). Sesión activa ahora: '+activeSessions+'\n';
+    prompt+='El trader opera: '+categories.join(', ')+'. Sus activos principales: '+userTickers+'\n\n';
+
     if (fgText)       prompt+='=== SENTIMIENTO ===\n'+fgText+'\n\n';
     if (pricesText)   prompt+='=== PRECIOS REALES AHORA ===\n'+pricesText+'\n';
     if (fredText)     prompt+='\n'+fredText+'\n';
@@ -609,15 +620,37 @@
     if (avText)       prompt+='\n'+avText+'\n';
     if (newsText)     prompt+='=== NOTICIAS Y GEOPOLÍTICA HOY ===\n'+newsText+'\n';
     if (!hasReal)     prompt+='Usa tu conocimiento actualizado.\n\n';
-    prompt+='\nEl trader opera: '+categories.join(', ')+'. Activos: '+userTickers+'\n\n';
-    prompt+='IMPORTANTE: Sin asteriscos ni markdown. Solo texto plano.\n\n';
-    prompt+='🎯 RESUMEN EJECUTIVO\n[3-4 frases con lo más importante del día]\n\n';
-    prompt+='📡 CONTEXTO DE LA SEMANA\n[4-5 frases del contexto macro global]\n\n';
-    prompt+='🌍 GEOPOLÍTICA Y RIESGO\n[4-5 frases sobre tensiones actuales con fuentes reales si las tienes. Explica cómo afectan a los mercados hoy]\n\n';
-    prompt+='😨 SENTIMIENTO DEL MERCADO\n[Explica el Fear & Greed actual y qué implica para operar hoy]\n\n';
-    prompt+='⚡ SESIÓN DE HOY\n• Sentimiento: [Risk-on/Risk-off/Mixto — por qué]\n• Volatilidad: [Alta/Media/Baja — por qué]\n• Sesiones activas: [cuáles están abiertas ahora mismo]\n• Consejo del día: [consejo concreto y razonado]\n\n';
+
+    prompt+='\nIMPORTANTE: Sin asteriscos ni markdown. Solo texto plano. Sé muy específico, detallado y accionable en cada sección.\n\n';
+
+    prompt+='🎯 RESUMEN EJECUTIVO\n';
+    prompt+='[6-8 frases que cubran TODOS estos puntos: (1) el evento o dato más importante del día con hora exacta, (2) sentimiento actual del mercado y por qué, (3) situación geopolítica más relevante que afecta hoy, (4) qué activos están en el foco hoy y por qué, (5) la oportunidad o riesgo principal de la sesión, (6) qué NO hacer hoy. Este resumen debe ser suficiente para preparar la sesión sin leer el resto.]\n\n';
+
+    prompt+='📡 CONTEXTO DE LA SEMANA\n';
+    prompt+='[7-9 frases que expliquen: qué datos macroeconómicos han salido esta semana y cómo han afectado (usa los datos de FRED y ForexFactory), qué datos importantes quedan por salir y cuándo, cómo están reaccionando los mercados en conjunto esta semana, qué narrativa macro domina (inflación, tipos, crecimiento, recesión...), y qué esperar para el resto de la semana.]\n\n';
+
+    prompt+='🌍 GEOPOLÍTICA Y RIESGO\n';
+    prompt+='[7-9 frases muy detalladas sobre: los conflictos activos y su impacto directo en materias primas y divisas, tensiones comerciales y aranceles con efecto en bolsas, riesgos políticos en economías clave, qué activos refugio están reaccionando (oro, JPY, CHF, bonos), y una evaluación del riesgo geopolítico global hoy en escala Alta/Media/Baja con justificación. Usa las noticias reales que tienes.]\n\n';
+
+    prompt+='😨 SENTIMIENTO DEL MERCADO\n';
+    prompt+='[6-8 frases: explica el nivel exacto del Fear & Greed Index y qué significa históricamente, cómo está el sentimiento en cripto vs equities vs forex, qué indica el sentimiento de las noticias (bullish/bearish) según Alpha Vantage, si el sentimiento actual es coherente con los fundamentales o hay divergencia, y 2-3 conclusiones operativas concretas que se derivan del sentimiento actual.]\n\n';
+
+    prompt+='⚡ SESIÓN DE HOY\n';
+    prompt+='Sesión activa ahora: '+activeSessions+'\n';
+    prompt+='• Sentimiento de sesión: [Risk-on/Risk-off/Mixto — explica 3-4 razones concretas con datos reales que justifican este sentimiento]\n';
+    prompt+='• Volatilidad esperada: [Alta/Media/Baja — explica exactamente por qué: qué eventos, qué datos, qué condiciones técnicas generan esta volatilidad hoy]\n';
+    prompt+='• Puntos clave de la sesión: [3-4 bullets con los niveles, eventos o momentos exactos a vigilar durante la sesión de hoy]\n';
+    prompt+='• Activos a vigilar para entrada: [2-3 activos específicos de los que opera el trader, explicando por qué hoy son candidatos y qué condición buscar para entrar]\n';
+    prompt+='• Activos a evitar hoy: [1-2 activos que NO se deben operar hoy por volatilidad excesiva, falta de dirección o eventos pendientes, con explicación]\n';
+    prompt+='• Recomendaciones de sesión: [3-4 recomendaciones operativas concretas y accionables para hoy, no genéricas]\n\n';
+
     prompt+='📰 EVENTOS Y NOTICIAS CLAVE\n\n';
-    prompt+='1. [TÍTULO] — Impacto: [ALTO/MEDIO/BAJO]\n📅 [hora o día]\n[4-5 frases explicando el evento, qué se espera y qué pasa si sale mejor/peor]\nPrevisión: [dato] | Anterior: [dato]\nActivos afectados: [↑ o ↓ o → TICKER — razón]\n\n';
+    prompt+='Para cada evento del calendario ForexFactory incluye el dato real si ya salió. Formato:\n';
+    prompt+='1. [TÍTULO DEL EVENTO] — Impacto: [ALTO/MEDIO/BAJO]\n';
+    prompt+='📅 Hora: [hora exacta si disponible] | País: [país]\n';
+    prompt+='[5-6 frases: qué mide este indicador, qué esperaba el mercado, si ya salió el dato real cómo fue vs previsión y cómo reaccionó el mercado, si no ha salido aún qué pasará si sale mejor o peor de lo previsto, y qué estrategia adoptar en función del resultado]\n';
+    prompt+='Previsión: [dato] | Anterior: [dato] | Real: [dato si ya salió, si no: "Pendiente a las HH:MM"]\n';
+    prompt+='Activos afectados: [↑ o ↓ o → TICKER — razón específica]\n\n';
     prompt+='2. [igual]\n3. [igual]\n4. [igual]\n5. [igual]\n\nSin asteriscos ni markdown.';
 
     try {
@@ -625,9 +658,9 @@
         method:'POST',
         headers:{'Content-Type':'application/json','Authorization':'Bearer '+groqKey},
         body:JSON.stringify({
-          model:'llama-3.3-70b-versatile', max_tokens:2500,
+          model:'llama-3.3-70b-versatile', max_tokens:4000,
           messages:[
-            {role:'system',content:'Eres un analista senior de mercados financieros. Produces briefings detallados, profesionales y accionables en español correcto. NUNCA uses asteriscos ni markdown. Usas siempre los datos reales que te dan, especialmente las noticias geopolíticas y financieras, citando las fuentes cuando puedas.'},
+            {role:'system',content:'Eres un analista senior de mercados financieros con 20 años de experiencia. Produces briefings de trading diarios extremadamente detallados, específicos y accionables en español correcto y profesional. NUNCA uses asteriscos ni markdown de ningún tipo. Siempre usas los datos reales que te proporcionan. Eres muy concreto: das activos específicos, horas exactas, niveles precisos y razones fundamentadas. Nunca das consejos genéricos. Si tienes datos reales los usas y los explicas en profundidad. El trader que te lee depende de tu análisis para tomar decisiones de dinero real.'},
             {role:'user',content:prompt}
           ]
         })
