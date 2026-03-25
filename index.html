@@ -157,7 +157,7 @@
   <div class="setup-label" style="margin-top:18px">Estilo de trading</div>
   <div class="chip-grid">
     <span class="chip" data-style="scalping">⚡ Scalping</span>
-    <span class="chip" data-style="intradía">📅 Intradía</span>
+    <span class="chip" data-style="intradiario">📅 Intradía</span>
     <span class="chip" data-style="swing">📊 Swing</span>
     <span class="chip" data-style="posicional">📆 Posicional</span>
   </div>
@@ -308,7 +308,7 @@
 
   function saveKey() {
     var k = document.getElementById('groqKey').value.trim();
-    if (!k || k.indexOf('gsk_') !== 0) { alert('Key inválida (debe empezar por gsk_)'); return; }
+    if (!k || k.indexOf('gsk_') !== 0) { alert('Key invalida (debe empezar por gsk_)'); return; }
     var cats = [];
     document.querySelectorAll('.chip[data-cat].active').forEach(function(c){ cats.push(c.dataset.cat); });
     if (!cats.length) { alert('Selecciona al menos un mercado'); return; }
@@ -634,21 +634,16 @@
     var centralBanksText='';
     var cbRes=results[10];
     if (cbRes&&cbRes.status==='fulfilled'&&Array.isArray(cbRes.value)&&cbRes.value.length) {
-      centralBanksText='=== BANCOS CENTRALES (BCE, Fed, BOJ, Bank of England, BIS) ===
-';
+      centralBanksText='=== BANCOS CENTRALES (BCE, Fed, BOJ, Bank of England, BIS) ===\n';
       cbRes.value.forEach(function(feed){
         if (feed.items&&feed.items.length) {
           activeSources.push(feed.source);
-          centralBanksText+='
-['+feed.source+']
-';
+          centralBanksText+='\n['+feed.source+']\n';
           feed.items.forEach(function(item){
             centralBanksText+='• '+item.title;
             if(item.date) centralBanksText+=' ['+item.date+']';
-            centralBanksText+='
-';
-            if(item.summary) centralBanksText+='  '+item.summary+'
-';
+            centralBanksText+='\n';
+            if(item.summary) centralBanksText+='  '+item.summary+'\n';
           });
         }
       });
@@ -658,19 +653,15 @@
     var globalStocksText='';
     var gsRes=results[11];
     if (gsRes&&gsRes.status==='fulfilled'&&Array.isArray(gsRes.value)&&gsRes.value.length) {
-      globalStocksText='=== BOLSAS GLOBALES (Europa, Asia, América) ===
-';
+      globalStocksText='=== BOLSAS GLOBALES (Europa, Asia, América) ===\n';
       gsRes.value.forEach(function(feed){
         if (feed.items&&feed.items.length) {
           activeSources.push(feed.source);
-          globalStocksText+='
-['+feed.source+']
-';
+          globalStocksText+='\n['+feed.source+']\n';
           feed.items.forEach(function(item){
             globalStocksText+='• '+item.title;
             if(item.date) globalStocksText+=' ['+item.date+']';
-            globalStocksText+='
-';
+            globalStocksText+='\n';
           });
         }
       });
@@ -709,7 +700,33 @@
     if (newsText)          prompt+='=== NOTICIAS Y GEOPOLÍTICA HOY ===\n'+newsText+'\n';
     if (!hasReal)          prompt+='Usa tu conocimiento actualizado.\n\n';
 
-    prompt+='\nIMPORTANTE: Sin asteriscos ni markdown. Solo texto plano. Sé muy específico, detallado y accionable en cada sección.\n\n';
+    // Instrucciones específicas por mercado y estilo
+    var styles = JSON.parse(localStorage.getItem('mb_styles')||'[]');
+    var tz = localStorage.getItem('mb_tz') || 'europe';
+    var tzLabels = {europe:'Europa/España (CET/CEST)', latam:'Latinoamérica', us:'EE.UU.', asia:'Asia'};
+    var styleText = styles.length ? styles.join(', ') : 'intradiario';
+
+    var profileInstructions = '';
+    if (categories.indexOf('indices') > -1) profileInstructions += 'INDICES: Analiza DAX, IBEX35, CAC40, FTSE100, S&P500, Nasdaq, Nikkei225 con noticias reales de cada bolsa. Indica apertura, tendencia y catalizadores especificos.\n';
+    if (categories.indexOf('forex') > -1) profileInstructions += 'FOREX: Analiza EUR/USD, GBP/USD, USD/JPY, AUD/USD, USD/CHF en detalle. Usa datos de bancos centrales (BCE, BOJ, Fed, BOE). Indica sesgo direccional y rangos esperados.\n';
+    if (categories.indexOf('crypto') > -1) profileInstructions += 'CRIPTO: Analiza BTC, ETH, SOL, BNB, XRP con precios reales. Indica correlacion con equities, sentimiento y catalizadores.\n';
+    if (categories.indexOf('commodities') > -1) profileInstructions += 'MATERIAS PRIMAS: Analiza Oro (XAU/USD), Petroleo (WTI/Brent), Gas Natural. Relaciona con geopolitica y dolar.\n';
+    if (categories.indexOf('stocks') > -1) profileInstructions += 'ACCIONES: Analiza S&P500, Nasdaq, sectores clave y earnings de la semana. Indica que sectores estan en foco.\n';
+
+    var styleInstructions = '';
+    if (styleText.indexOf('scalping') > -1) styleInstructions = 'ESTILO SCALPING: Enfocate en volatilidad inmediata, horarios exactos de noticias que generen impulso, activos con mayor volumen ahora. NO hagas analisis semanal largo.\n';
+    else if (styleText.indexOf('swing') > -1) styleInstructions = 'ESTILO SWING: Enfocate en tendencia macro semanal, niveles tecnicos de dias/semanas, catalizadores de mediano plazo que puedan cambiar la tendencia.\n';
+    else if (styleText.indexOf('posicional') > -1) styleInstructions = 'ESTILO POSICIONAL: Enfocate en tendencia macro global, datos FRED, politica de bancos centrales a medio plazo y perspectivas fundamentales.\n';
+    else styleInstructions = 'ESTILO INTRADIARIO: Enfocate en eventos del dia con hora exacta, sesion activa actual, rangos esperados del dia y activos con catalizadores claros hoy.\n';
+
+    prompt += '=== PERFIL DEL TRADER ===\n';
+    prompt += 'Zona horaria: ' + tzLabels[tz] + '\n';
+    prompt += 'Estilo: ' + styleText + '\n';
+    prompt += profileInstructions;
+    prompt += styleInstructions;
+    prompt += 'IMPORTANTE: Centra TODO el analisis en los mercados que opera. No menciones activos que no le correspondan.\n\n';
+
+        prompt+='\nIMPORTANTE: Sin asteriscos ni markdown. Solo texto plano. Sé muy específico, detallado y accionable en cada sección.\n\n';
 
     prompt+='🎯 RESUMEN EJECUTIVO\n';
     prompt+='[6-8 frases que cubran TODOS estos puntos: (1) el evento o dato más importante del día con hora exacta, (2) sentimiento actual del mercado y por qué, (3) situación geopolítica más relevante que afecta hoy, (4) qué activos están en el foco hoy y por qué, (5) la oportunidad o riesgo principal de la sesión, (6) qué NO hacer hoy. Este resumen debe ser suficiente para preparar la sesión sin leer el resto.]\n\n';
