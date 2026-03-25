@@ -495,7 +495,9 @@
     var calendarText='', newsText='', fgText='', activeSources=[];
     setStep('📅 Cargando datos...');
 
-    // idx: 0=calendar,1=feargreed,2=finnhub_news,3=finnhub_forex,4=finnhub_crypto,5=geopolitics,6=fred,7=apitube_fin,8=apitube_geo,9=av_news
+    // idx: 0=calendar,1=feargreed,2=finnhub_news,3=finnhub_forex,4=finnhub_crypto
+    //      5=geopolitics,6=fred,7=apitube_fin,8=apitube_geo,9=av_news
+    //      10=central_banks,11=global_stocks
     var reqs = [
       fetch(PROXY+'?type=calendar').then(function(r){return r.json();}).catch(function(){return null;}),
       fetch(PROXY+'?type=feargreed').then(function(r){return r.json();}).catch(function(){return null;}),
@@ -506,7 +508,9 @@
       fetch(PROXY+'?type=fred').then(function(r){return r.json();}).catch(function(){return null;}),
       fetch(PROXY+'?type=apitube_financial').then(function(r){return r.json();}).catch(function(){return null;}),
       fetch(PROXY+'?type=apitube_geopolitics').then(function(r){return r.json();}).catch(function(){return null;}),
-      fetch(PROXY+'?type=av_news').then(function(r){return r.json();}).catch(function(){return null;})
+      fetch(PROXY+'?type=av_news').then(function(r){return r.json();}).catch(function(){return null;}),
+      fetch(PROXY+'?type=central_banks').then(function(r){return r.json();}).catch(function(){return null;}),
+      fetch(PROXY+'?type=global_stocks').then(function(r){return r.json();}).catch(function(){return null;})
     ];
 
     var results = await Promise.allSettled(reqs);
@@ -626,12 +630,58 @@
       });
     }
 
+    // Bancos Centrales (idx 10)
+    var centralBanksText='';
+    var cbRes=results[10];
+    if (cbRes&&cbRes.status==='fulfilled'&&Array.isArray(cbRes.value)&&cbRes.value.length) {
+      centralBanksText='=== BANCOS CENTRALES (BCE, Fed, BOJ, Bank of England, BIS) ===
+';
+      cbRes.value.forEach(function(feed){
+        if (feed.items&&feed.items.length) {
+          activeSources.push(feed.source);
+          centralBanksText+='
+['+feed.source+']
+';
+          feed.items.forEach(function(item){
+            centralBanksText+='• '+item.title;
+            if(item.date) centralBanksText+=' ['+item.date+']';
+            centralBanksText+='
+';
+            if(item.summary) centralBanksText+='  '+item.summary+'
+';
+          });
+        }
+      });
+    }
+
+    // Bolsas Globales (idx 11)
+    var globalStocksText='';
+    var gsRes=results[11];
+    if (gsRes&&gsRes.status==='fulfilled'&&Array.isArray(gsRes.value)&&gsRes.value.length) {
+      globalStocksText='=== BOLSAS GLOBALES (Europa, Asia, América) ===
+';
+      gsRes.value.forEach(function(feed){
+        if (feed.items&&feed.items.length) {
+          activeSources.push(feed.source);
+          globalStocksText+='
+['+feed.source+']
+';
+          feed.items.forEach(function(item){
+            globalStocksText+='• '+item.title;
+            if(item.date) globalStocksText+=' ['+item.date+']';
+            globalStocksText+='
+';
+          });
+        }
+      });
+    }
+
     // Precios reales
     var pricesText='';
     if (cryptoData.length) pricesText+='CRIPTO: '+cryptoData.map(function(q){return q.symbol+' $'+parseFloat(q.price).toLocaleString('en-US',{maximumFractionDigits:2})+' ('+(q.change>=0?'+':'')+parseFloat(q.change).toFixed(2)+'%)';}).join(', ')+'\n';
     if (forexData.length) pricesText+='FOREX: '+forexData.map(function(q){return q.symbol+' '+parseFloat(q.price).toFixed(4)+(q.change!==null?' ('+(q.change>=0?'+':'')+parseFloat(q.change).toFixed(2)+'%)':'');}).join(', ')+'\n';
 
-    var hasReal=calendarText.length>0||newsText.length>0||fredText.length>0||avText.length>0;
+    var hasReal=calendarText.length>0||newsText.length>0||fredText.length>0||avText.length>0||centralBanksText.length>0||globalStocksText.length>0;
     var userTickers=categories.map(function(c){return CAT_TICKERS[c]||'';}).filter(Boolean).join(', ');
     var currentTime=now.toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'});
 
@@ -649,13 +699,15 @@
     var prompt='Hoy es '+todayStr+' a las '+currentTime+' (hora España). Sesión activa ahora: '+activeSessions+'\n';
     prompt+='El trader opera: '+categories.join(', ')+'. Sus activos principales: '+userTickers+'\n\n';
 
-    if (fgText)       prompt+='=== SENTIMIENTO ===\n'+fgText+'\n\n';
-    if (pricesText)   prompt+='=== PRECIOS REALES AHORA ===\n'+pricesText+'\n';
-    if (fredText)     prompt+='\n'+fredText+'\n';
-    if (calendarText) prompt+='=== CALENDARIO ECONÓMICO (ForexFactory) ===\n'+calendarText+'\n';
-    if (avText)       prompt+='\n'+avText+'\n';
-    if (newsText)     prompt+='=== NOTICIAS Y GEOPOLÍTICA HOY ===\n'+newsText+'\n';
-    if (!hasReal)     prompt+='Usa tu conocimiento actualizado.\n\n';
+    if (fgText)            prompt+='=== SENTIMIENTO ===\n'+fgText+'\n\n';
+    if (pricesText)        prompt+='=== PRECIOS REALES AHORA ===\n'+pricesText+'\n';
+    if (fredText)          prompt+=fredText+'\n';
+    if (centralBanksText)  prompt+=centralBanksText+'\n';
+    if (calendarText)      prompt+='=== CALENDARIO ECONÓMICO (ForexFactory) ===\n'+calendarText+'\n';
+    if (globalStocksText)  prompt+=globalStocksText+'\n';
+    if (avText)            prompt+=avText+'\n';
+    if (newsText)          prompt+='=== NOTICIAS Y GEOPOLÍTICA HOY ===\n'+newsText+'\n';
+    if (!hasReal)          prompt+='Usa tu conocimiento actualizado.\n\n';
 
     prompt+='\nIMPORTANTE: Sin asteriscos ni markdown. Solo texto plano. Sé muy específico, detallado y accionable en cada sección.\n\n';
 
