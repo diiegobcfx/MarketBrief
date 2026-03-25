@@ -481,6 +481,11 @@
     var categories = JSON.parse(localStorage.getItem('mb_categories')||'["indices","forex","crypto","commodities","stocks"]');
     if (!groqKey) { resetKey(); return; }
 
+    // Refrescar hora actual en cada llamada
+    now = new Date();
+    todayISO = now.toISOString().slice(0,10);
+    todayStr = now.toLocaleDateString('es-ES', {weekday:'long',year:'numeric',month:'long',day:'numeric'});
+
     var btn = document.getElementById('mainBtn');
     var content = document.getElementById('content');
     setMainBtn('loading');
@@ -691,7 +696,7 @@
         body:JSON.stringify({
           model:'llama-3.3-70b-versatile', max_tokens:4000,
           messages:[
-            {role:'system',content:'Eres un analista senior de mercados financieros con 20 años de experiencia. Produces briefings de trading diarios extremadamente detallados, específicos y accionables en español correcto y profesional. NUNCA uses asteriscos ni markdown de ningún tipo. Siempre usas los datos reales que te proporcionan. Eres muy concreto: das activos específicos, horas exactas, niveles precisos y razones fundamentadas. Nunca das consejos genéricos. Si tienes datos reales los usas y los explicas en profundidad. El trader que te lee depende de tu análisis para tomar decisiones de dinero real.'},
+            {role:'system',content:'Eres un analista senior de mercados financieros con 20 años de experiencia. Produces briefings de trading diarios extremadamente detallados, específicos y accionables. ESCRIBE ÚNICAMENTE EN ESPAÑOL CORRECTO. PROHIBIDO usar caracteres de otros alfabetos (árabe, chino, cirílico, etc.). NUNCA uses asteriscos ni markdown. Siempre usas los datos reales que te proporcionan con la hora y fecha actual exacta. Eres muy concreto: das activos específicos, horas exactas y razones fundamentadas. Nunca das consejos genéricos.'},
             {role:'user',content:prompt}
           ]
         })
@@ -700,6 +705,11 @@
       var data=await groqRes.json();
       var raw=data.choices&&data.choices[0]&&data.choices[0].message&&data.choices[0].message.content;
       if (!raw) throw new Error('Respuesta vacía');
+
+      // Limpiar caracteres no latinos que el modelo a veces introduce
+      raw = raw.replace(/[\u0600-\u06FF\u0750-\u077F\u4E00-\u9FFF\u3040-\u309F\u0400-\u04FF]+/g, '');
+      // Limpiar líneas vacías múltiples
+      raw = raw.replace(/\n{3,}/g, '\n\n');
 
       var ts = Date.now();
       saveToHistory(raw, activeSources, ts);
