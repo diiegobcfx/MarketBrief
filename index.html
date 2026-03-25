@@ -85,12 +85,10 @@
   .earning-name { color:var(--muted); font-size:11px; flex:1; margin:0 8px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   .earning-date { font-family:monospace; color:var(--sub); font-size:10px; }
 
-  /* BRIEFING BTN ROW */
-  .btn-row { display:flex; gap:8px; margin-bottom:6px; }
-  #mainBtn { flex:1; padding:15px; background:var(--accent); color:#000; border:none; border-radius:13px; font-size:14px; font-weight:700; cursor:pointer; }
+  /* MAIN BTN */
+  #mainBtn { width:100%; padding:15px; background:var(--accent); color:#000; border:none; border-radius:13px; font-size:14px; font-weight:700; cursor:pointer; margin-bottom:6px; }
   #mainBtn:disabled { opacity:0.6; }
-  #mainBtn.done { background:transparent; color:var(--accent); border:1px solid var(--border); }
-  #forceBtn { padding:15px 16px; background:var(--surface); border:1px solid var(--border); border-radius:13px; font-size:16px; cursor:pointer; }
+  #mainBtn.done { background:transparent; color:var(--accent); border:1px solid var(--border); font-size:13px; }
   .step-indicator { font-size:11px; color:var(--muted); text-align:center; margin-bottom:10px; font-family:monospace; min-height:16px; }
 
   /* LAST UPDATED */
@@ -143,19 +141,37 @@
 <div id="setupScreen">
   <div class="setup-icon">📊</div>
   <div class="setup-title">Market<span>Brief</span></div>
-  <p class="setup-sub">Tu briefing de trading diario con datos reales. Solo necesitas tu API key de Groq.</p>
+  <p class="setup-sub">Personaliza tu briefing para que el análisis se centre exactamente en lo que operas.</p>
   <div class="setup-label">API Key de Groq</div>
   <input class="setup-input" type="password" id="groqKey" placeholder="gsk_..." autocomplete="off" spellcheck="false" />
-  <div class="setup-label">¿Qué tradeas?</div>
+
+  <div class="setup-label">Mercados que operas</div>
   <div class="chip-grid">
-    <span class="chip active" data-cat="indices">📈 Índices</span>
-    <span class="chip active" data-cat="forex">💱 Forex</span>
-    <span class="chip active" data-cat="crypto">₿ Cripto</span>
-    <span class="chip active" data-cat="commodities">🛢 Materias primas</span>
-    <span class="chip active" data-cat="stocks">🏢 Acciones</span>
+    <span class="chip" data-cat="indices">📈 Índices</span>
+    <span class="chip" data-cat="forex">💱 Forex</span>
+    <span class="chip" data-cat="crypto">₿ Cripto</span>
+    <span class="chip" data-cat="commodities">🛢 Materias primas</span>
+    <span class="chip" data-cat="stocks">🏢 Acciones USA</span>
   </div>
+
+  <div class="setup-label" style="margin-top:18px">Estilo de trading</div>
+  <div class="chip-grid">
+    <span class="chip" data-style="scalping">⚡ Scalping</span>
+    <span class="chip" data-style="intradía">📅 Intradía</span>
+    <span class="chip" data-style="swing">📊 Swing</span>
+    <span class="chip" data-style="posicional">📆 Posicional</span>
+  </div>
+
+  <div class="setup-label" style="margin-top:18px">Zona horaria</div>
+  <div class="chip-grid">
+    <span class="chip active" data-tz="europe">🇪🇸 Europa (España)</span>
+    <span class="chip" data-tz="latam">🌎 Latinoamérica</span>
+    <span class="chip" data-tz="us">🇺🇸 EE.UU.</span>
+    <span class="chip" data-tz="asia">🌏 Asia</span>
+  </div>
+
   <button class="setup-btn" onclick="saveKey()">Comenzar →</button>
-  <p class="setup-note">Tu key se guarda solo en tu dispositivo<br>Consíguela gratis en console.groq.com</p>
+  <p class="setup-note">Tu configuración se guarda solo en tu dispositivo<br>API key gratis en console.groq.com</p>
 </div>
 
 <!-- APP -->
@@ -224,10 +240,7 @@
     </div>
 
     <div id="tabContent-briefing">
-      <div class="btn-row">
-        <button id="mainBtn" onclick="generate(false)">⚡ Generar Briefing de Hoy</button>
-        <button id="forceBtn" onclick="generate(true)" title="Forzar actualización con noticias nuevas">🔄</button>
-      </div>
+      <button id="mainBtn" onclick="generate()">⚡ Generar Briefing de Hoy</button>
       <div id="lastUpdated" class="last-updated" style="display:none"></div>
       <div id="stepMsg" class="step-indicator"></div>
       <div id="content">
@@ -280,7 +293,15 @@
   }
 
   document.querySelectorAll('.chip').forEach(function(c){
-    c.addEventListener('click', function(){ this.classList.toggle('active'); });
+    c.addEventListener('click', function() {
+      // Zona horaria: selección única
+      if (this.dataset.tz) {
+        document.querySelectorAll('.chip[data-tz]').forEach(function(x){ x.classList.remove('active'); });
+        this.classList.add('active');
+      } else {
+        this.classList.toggle('active');
+      }
+    });
   });
 
   if (localStorage.getItem('mb_groq_key')) { showApp(); loadMarketData(); autoLoad(); }
@@ -289,10 +310,17 @@
     var k = document.getElementById('groqKey').value.trim();
     if (!k || k.indexOf('gsk_') !== 0) { alert('Key inválida (debe empezar por gsk_)'); return; }
     var cats = [];
-    document.querySelectorAll('.chip.active').forEach(function(c){ cats.push(c.dataset.cat); });
-    if (!cats.length) { alert('Selecciona al menos una categoría'); return; }
+    document.querySelectorAll('.chip[data-cat].active').forEach(function(c){ cats.push(c.dataset.cat); });
+    if (!cats.length) { alert('Selecciona al menos un mercado'); return; }
+    var styles = [];
+    document.querySelectorAll('.chip[data-style].active').forEach(function(c){ styles.push(c.dataset.style); });
+    var tz = 'europe';
+    var tzChip = document.querySelector('.chip[data-tz].active');
+    if (tzChip) tz = tzChip.dataset.tz;
     localStorage.setItem('mb_groq_key', k);
     localStorage.setItem('mb_categories', JSON.stringify(cats));
+    localStorage.setItem('mb_styles', JSON.stringify(styles));
+    localStorage.setItem('mb_tz', tz);
     showApp(); loadMarketData(); autoLoad();
   }
 
@@ -319,8 +347,24 @@
     if (todayItem) {
       renderBriefing(todayItem.raw, todayItem.sources, true);
       showLastUpdated(todayItem.timestamp);
-      document.getElementById('mainBtn').textContent = '↺ Actualizar briefing';
-      document.getElementById('mainBtn').className = 'done';
+      setMainBtn('done');
+    }
+  }
+
+  function setMainBtn(state) {
+    var btn = document.getElementById('mainBtn');
+    if (state === 'done') {
+      btn.textContent = '🔄 Actualizar con noticias nuevas';
+      btn.className = 'done';
+      btn.disabled = false;
+    } else if (state === 'loading') {
+      btn.textContent = '⏳ Generando...';
+      btn.className = '';
+      btn.disabled = true;
+    } else {
+      btn.textContent = '⚡ Generar Briefing de Hoy';
+      btn.className = '';
+      btn.disabled = false;
     }
   }
 
@@ -329,7 +373,7 @@
     var d = new Date(ts);
     var timeStr = d.toLocaleTimeString('es-ES', {hour:'2-digit', minute:'2-digit'});
     var el = document.getElementById('lastUpdated');
-    el.innerHTML = 'Última actualización: <span>' + timeStr + '</span> · Pulsa 🔄 para refrescar';
+    el.innerHTML = 'Última actualización: <span>' + timeStr + '</span> · Pulsa el botón para refrescar';
     el.style.display = 'block';
   }
 
@@ -432,27 +476,14 @@
     return '⚪ BAJO';
   }
 
-  async function generate(force) {
+  async function generate() {
     var groqKey    = localStorage.getItem('mb_groq_key');
     var categories = JSON.parse(localStorage.getItem('mb_categories')||'["indices","forex","crypto","commodities","stocks"]');
     if (!groqKey) { resetKey(); return; }
 
-    // Si no es forzado y ya hay briefing de hoy, mostrar el guardado
-    if (!force) {
-      var history = JSON.parse(localStorage.getItem('mb_history')||'[]');
-      var todayItem = history.find(function(h){ return h.date===todayISO; });
-      if (todayItem && todayItem.raw) {
-        renderBriefing(todayItem.raw, todayItem.sources, true);
-        showLastUpdated(todayItem.timestamp);
-        document.getElementById('mainBtn').textContent = '↺ Actualizar briefing';
-        document.getElementById('mainBtn').className = 'done';
-        return;
-      }
-    }
-
     var btn = document.getElementById('mainBtn');
     var content = document.getElementById('content');
-    btn.disabled=true; btn.className=''; btn.textContent='⏳ Cargando...';
+    setMainBtn('loading');
     document.getElementById('lastUpdated').style.display = 'none';
     content.innerHTML = '<div class="skel"><div class="sl" style="width:30%;height:10px"></div><div class="sl" style="width:85%;height:15px;margin-top:4px"></div><div class="sl" style="width:95%;height:10px"></div></div>'.repeat(3);
 
@@ -675,13 +706,13 @@
       setStep('');
       renderBriefing(raw, activeSources, hasReal);
       showLastUpdated(ts);
-      btn.textContent='↺ Actualizar briefing'; btn.className='done'; btn.disabled=false;
+      setMainBtn('done');
       loadMarketData();
 
     } catch(e) {
       setStep('');
       content.innerHTML='<div class="error-box">⚠️ '+e.message+'</div>';
-      btn.textContent='⚡ Reintentar'; btn.className=''; btn.disabled=false;
+      setMainBtn('idle');
     }
   }
 
