@@ -399,7 +399,7 @@ var todayISO=now.toISOString().slice(0,10);
 var todayStr=now.toLocaleDateString('es-ES',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
 var cryptoData=[],forexData=[],activePTab='crypto';
 var allCalEvents=[],allNewsItems=[];
-var calImpact='all',calCountry=null,calDay='all';
+var calImpacts=[],calCountry=null,calDay='all';
 var newsFilter='all';
 var theme=localStorage.getItem('mb_theme')||'dark';
 var ttsUtterance=null,ttsPlaying=false;
@@ -707,8 +707,22 @@ function setCalDay(el,day){
   el.classList.add('on');calDay=day;renderCalendar();
 }
 function setCalImpact(el,impact){
-  document.querySelectorAll('.cal-filter[data-impact]').forEach(function(f){f.classList.remove('on');});
-  el.classList.add('on');calImpact=impact;renderCalendar();
+  if(impact==='all'){
+    // Clear all, select "Todos"
+    calImpacts=[];
+    document.querySelectorAll('.cal-filter[data-impact]').forEach(function(f){f.classList.remove('on');});
+    el.classList.add('on');
+  } else {
+    // Remove "Todos" highlight
+    document.querySelector('.cal-filter[data-impact="all"]').classList.remove('on');
+    // Toggle this impact
+    var idx=calImpacts.indexOf(impact);
+    if(idx>-1){calImpacts.splice(idx,1);el.classList.remove('on');}
+    else{calImpacts.push(impact);el.classList.add('on');}
+    // If nothing selected, revert to "Todos"
+    if(!calImpacts.length){document.querySelector('.cal-filter[data-impact="all"]').classList.add('on');}
+  }
+  renderCalendar();
 }
 function setCalCountry(el,country){
   var wasOn=el.classList.contains('on');
@@ -721,7 +735,7 @@ function renderCalendar(){
   if(!allCalEvents.length){document.getElementById('calContent').innerHTML='<div class="sl" style="height:300px;border-radius:var(--r)"></div>';return;}
   var filtered=allCalEvents.filter(function(e){
     if(calDay!=='all'&&(!e.date||e.date.slice(0,10)!==calDay))return false;
-    if(calImpact!=='all'&&e.impact!==calImpact)return false;
+    if(calImpacts.length>0&&calImpacts.indexOf(e.impact)===-1)return false;
     if(calCountry&&e.country!==calCountry)return false;
     return true;
   });
@@ -761,7 +775,8 @@ async function loadNews(){
       fetch(PROXY+'?type=finnhub_forex').then(function(r){return r.json();}).catch(function(){return[];}),
       fetch(PROXY+'?type=finnhub_crypto').then(function(r){return r.json();}).catch(function(){return[];}),
       fetch(PROXY+'?type=geopolitics').then(function(r){return r.json();}).catch(function(){return[];}),
-      fetch(PROXY+'?type=central_banks').then(function(r){return r.json();}).catch(function(){return[];})
+      fetch(PROXY+'?type=central_banks').then(function(r){return r.json();}).catch(function(){return[];}),
+      fetch(PROXY+'?type=news_es').then(function(r){return r.json();}).catch(function(){return[];})
     ];
     var results=await Promise.allSettled(reqs);
     allNewsItems=[];
@@ -790,6 +805,14 @@ async function loadNews(){
         });
       });
     }
+    // Spanish news sources
+    if(results[5].status==='fulfilled'&&Array.isArray(results[5].value)){
+      results[5].value.forEach(function(feed){
+        if(feed.items)feed.items.forEach(function(item){
+          allNewsItems.push({cat:'macro',title:item.title,summary:item.summary,source:feed.source,date:item.date,url:item.link||null,lang:'es'});
+        });
+      });
+    }
     renderNews();
   }catch(e){}
 }
@@ -812,7 +835,7 @@ function renderNews(){
     var linkHtml='';
     if(n.url)linkHtml+='<a class="ni-link" href="'+esc(n.url)+'" target="_blank" rel="noopener">Leer ↗</a> ';
     if(translateUrl)linkHtml+='<a class="ni-link" href="'+esc(translateUrl)+'" target="_blank" rel="noopener">🌐 ES ↗</a>';
-    return '<div class="news-item"><div class="ni-meta"><span class="ni-cat cat-'+n.cat+'">'+catLabels[n.cat]+'</span><span class="ni-source">'+esc(n.source||'')+'</span><span class="ni-date">'+esc(n.date?n.date.slice(0,10):'')+'</span></div><div class="ni-title">'+esc(n.title||'')+'</div>'+(cleanSummary?'<div class="ni-summary">'+esc(cleanSummary)+'</div>':'')+(linkHtml?'<div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap;">'+linkHtml+'</div>':'')+'</div>';
+    return '<div class="news-item"><div class="ni-meta"><span class="ni-cat cat-'+n.cat+'">'+catLabels[n.cat]+'</span>'+lb+'<span class="ni-source">'+esc(n.source||'')+'</span><span class="ni-date">'+esc(n.date?n.date.slice(0,10):'')+'</span></div><div class="ni-title">'+esc(n.title||'')+'</div>'+(cleanSummary?'<div class="ni-summary">'+esc(cleanSummary)+'</div>':'')+(linkHtml?'<div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap;">'+linkHtml+'</div>':'')+'</div>';
   }).join('')+'</div>';
 }
 
@@ -1011,19 +1034,50 @@ function toggleTTS(){
   if(!raw){alert('Genera primero el briefing para poder escucharlo.');return;}
   // Clean text for TTS
   var text=raw
-    .replace(/[🎯📡⚡📰🌍😨📅•↑↓→✅]/g,' ')
-    .replace(/ALTO|MEDIO|BAJO/g,function(m){return m==='ALTO'?'impacto alto':m==='MEDIO'?'impacto medio':'impacto bajo';})
+    .replace(/🎯/g,'Resumen ejecutivo. ')
+    .replace(/📡/g,'Contexto de la semana. ')
+    .replace(/🌍/g,'Geopolítica y riesgo. ')
+    .replace(/😨/g,'Sentimiento del mercado. ')
+    .replace(/⚡/g,'Sesión de hoy. ')
+    .replace(/📰/g,'Eventos y noticias clave. ')
+    .replace(/[📅•↑↓→✅]/g,' ')
+    .replace(/ALTO/g,'impacto alto')
+    .replace(/MEDIO/g,'impacto medio')
+    .replace(/BAJO/g,'impacto bajo')
+    .replace(/Risk-on/g,'Risk on')
+    .replace(/Risk-off/g,'Risk off')
+    .replace(/EUR\/USD/g,'Euro Dólar')
+    .replace(/USD\/JPY/g,'Dólar Yen')
+    .replace(/GBP\/USD/g,'Libra Dólar')
+    .replace(/BTC/g,'Bitcoin')
+    .replace(/ETH/g,'Ethereum')
+    .replace(/XAU\/USD/g,'Oro')
     .replace(/\n+/g,'. ')
+    .replace(/\.\s*\./g,'.')
     .replace(/\s+/g,' ')
     .trim();
   ttsUtterance=new SpeechSynthesisUtterance(text);
   ttsUtterance.lang='es-ES';
-  ttsUtterance.rate=0.95;
-  ttsUtterance.pitch=1.0;
-  // Try to use a Spanish voice
+  ttsUtterance.rate=0.88;  // Slightly slower = more natural
+  ttsUtterance.pitch=0.95; // Slightly lower = more authoritative
+  ttsUtterance.volume=1.0;
+  // Prefer high-quality neural/premium voices
   var voices=window.speechSynthesis.getVoices();
-  var esVoice=voices.find(function(v){return v.lang==='es-ES'||v.lang==='es-MX'||v.lang.startsWith('es');});
-  if(esVoice)ttsUtterance.voice=esVoice;
+  var preferredNames=['Monica','Paulina','Jorge','Juan','Mónica','Microsoft Helena','Google español'];
+  var esVoice=null;
+  // First try premium/neural voices by name
+  for(var i=0;i<preferredNames.length;i++){
+    esVoice=voices.find(function(v){return v.name.indexOf(preferredNames[i])>-1&&v.lang.startsWith('es');});
+    if(esVoice)break;
+  }
+  // Fallback: any Spanish voice, preferring non-compact ones (better quality)
+  if(!esVoice){
+    esVoice=voices.find(function(v){return v.lang==='es-ES'&&v.name.indexOf('compact')===-1;});
+  }
+  if(!esVoice){
+    esVoice=voices.find(function(v){return v.lang.startsWith('es');});
+  }
+  if(esVoice){ttsUtterance.voice=esVoice;console.log('TTS voice:',esVoice.name);}
   ttsUtterance.onend=function(){stopTTS();};
   ttsUtterance.onerror=function(){stopTTS();};
   window.speechSynthesis.speak(ttsUtterance);
