@@ -587,6 +587,10 @@ async function loadForex(){
     var r=await fetch(PROXY+'?type=forex');
     var d=await r.json();
     if(d.error)throw new Error(d.error);
+    // Save previous prices before updating
+    if(forexData.length){
+      forexData.forEach(function(q){prevForexPrices[q.symbol]=q.price;});
+    }
     forexData=d;if(activePTab==='forex')renderPrices();
   }catch(e){forexData=[];}
 }
@@ -598,6 +602,9 @@ function switchPriceTab(tab){
   renderPrices();
 }
 
+// Store previous prices to calculate % change for forex
+var prevForexPrices={};
+
 function renderPrices(){
   var data=activePTab==='crypto'?cryptoData:forexData;
   if(!data||!data.length){
@@ -605,10 +612,21 @@ function renderPrices(){
     return;
   }
   document.getElementById('priceGrid').innerHTML=data.map(function(q){
-    var chg=q.change!==null&&q.change!==undefined?parseFloat(q.change):null;
+    var chg=null;
+    if(activePTab==='crypto'){
+      // Binance always provides change
+      chg=q.change!==null&&q.change!==undefined?parseFloat(q.change):null;
+    } else {
+      // For forex: use stored prev price to calculate %
+      var prev=prevForexPrices[q.symbol];
+      if(prev&&prev!==q.price){
+        chg=((parseFloat(q.price)-parseFloat(prev))/parseFloat(prev))*100;
+      } else if(q.change!==null&&q.change!==undefined&&q.change!==0){
+        chg=parseFloat(q.change);
+      }
+    }
     var up=chg!==null?chg>=0:null;
-    // Show change % — if null show neutral dash
-    var chgStr=chg!==null?(up?'+':'')+chg.toFixed(2)+'%':'–';
+    var chgStr=chg!==null?(chg>=0?'+':'')+chg.toFixed(2)+'%':'calc...';
     var chgClass=chg!==null?(up?'c-up':'c-dn'):'c-neu';
     var p=parseFloat(q.price);
     var ps=p>=10000?p.toLocaleString('es-ES',{maximumFractionDigits:0}):p>=100?p.toFixed(2):p>=1?p.toFixed(4):p.toFixed(6);
@@ -752,7 +770,7 @@ function renderCalendar(){
     byDate[date].forEach(function(e){
       var dotCls=e.impact==='High'?'d-hi':e.impact==='Medium'?'d-me':'d-lo';
       var rowBg=isToday&&e.actual?'background:rgba(0,255,136,0.03);':'';
-      var timeStr=e.time||'–';
+      var timeStr=e.time&&e.time.trim()?e.time.trim():'–';
       var foreStr=e.forecast?'<span class="val-fore">'+esc(e.forecast)+'</span>':'<span style="color:var(--muted)">–</span>';
       var prevStr=e.previous?'<span class="val-prev">'+esc(e.previous)+'</span>':'<span style="color:var(--muted)">–</span>';
       var realStr=e.actual?'<span class="val-real">'+esc(e.actual)+'</span>':'<span class="val-pending">–</span>';
