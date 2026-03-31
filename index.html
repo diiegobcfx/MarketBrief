@@ -770,7 +770,16 @@ function renderCalendar(){
     byDate[date].forEach(function(e){
       var dotCls=e.impact==='High'?'d-hi':e.impact==='Medium'?'d-me':'d-lo';
       var rowBg=isToday&&e.actual?'background:rgba(0,255,136,0.03);':'';
-      var timeStr=e.time&&e.time.trim()?e.time.trim():'–';
+      // Extract time from date field (ForexFactory format: "2026-03-29T19:50:00-04:00")
+      var timeStr='–';
+      if(e.time&&e.time.trim()){
+        timeStr=e.time.trim();
+      } else if(e.date&&e.date.indexOf('T')>-1){
+        try{
+          var d=new Date(e.date);
+          timeStr=d.toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit',timeZone:'Europe/Madrid'});
+        }catch(ex){timeStr='–';}
+      }
       var foreStr=e.forecast?'<span class="val-fore">'+esc(e.forecast)+'</span>':'<span style="color:var(--muted)">–</span>';
       var prevStr=e.previous?'<span class="val-prev">'+esc(e.previous)+'</span>':'<span style="color:var(--muted)">–</span>';
       var realStr=e.actual?'<span class="val-real">'+esc(e.actual)+'</span>':'<span class="val-pending">–</span>';
