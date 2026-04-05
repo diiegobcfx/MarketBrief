@@ -927,64 +927,92 @@ async function autoTranslateNews(){
   if(statusEl) statusEl.textContent='';
 }
 
-// Expand a news item with AI analysis
+// Expand a news item — fetch real article content from source
 async function expandNews(idx){
-  var groqKey=localStorage.getItem('mb_groq_key');
   var n=_currentNewsItems[idx];
   if(!n) return;
   var expandEl=document.getElementById('expand-'+idx);
   if(!expandEl) return;
-  // Toggle: if already expanded, collapse
+
+  // Toggle collapse
   if(expandEl.dataset.expanded==='1'){
     expandEl.style.display='none';
     expandEl.dataset.expanded='0';
     var btn=document.getElementById('expandbtn-'+idx);
-    if(btn) btn.textContent='▼ Más información';
+    if(btn) btn.textContent='▼ Leer más';
     return;
   }
+
   var btn=document.getElementById('expandbtn-'+idx);
-  if(btn){btn.textContent='⏳ Analizando...';btn.style.pointerEvents='none';}
+  if(btn){btn.textContent='⏳ Cargando...';btn.style.pointerEvents='none';}
   expandEl.style.display='block';
-  expandEl.innerHTML='<div style="display:flex;gap:6px;align-items:center;color:var(--muted);font-size:12px;padding:8px 0;"><span style="animation:sh 1s infinite">⚙</span> Generando análisis...</div>';
+  expandEl.innerHTML='<div style="color:var(--muted);font-size:12px;padding:8px 0;">Cargando artículo...</div>';
 
-  var title=n.titleEs||n.title||'';
-  var summary=n.summaryEs||(n.summary?n.summary.replace(/<[^>]+>/g,'').trim():'');
-  var prompt='Noticia: '+title+'
-Resumen: '+summary+'
-Fuente: '+(n.source||'')+'
-Fecha: '+(n.date||'')+'
-
-Analiza esta noticia financiera en español. Dame:
-1. Contexto: qué está pasando exactamente y por qué es importante ahora
-2. Impacto en mercados: qué activos se ven afectados (forex, cripto, bolsa, materias primas) y en qué dirección
-3. Qué vigilar: qué datos o eventos próximos relacionados hay que seguir
-4. Conclusión operativa: qué implica para un trader hoy
-
-Sé específico, concreto y útil. 150-200 palabras. Sin asteriscos ni markdown.';
-
-  try{
-    if(!groqKey) throw new Error('Sin API key');
-    var r=await fetch('https://api.groq.com/openai/v1/chat/completions',{
-      method:'POST',
-      headers:{'Content-Type':'application/json','Authorization':'Bearer '+groqKey},
-      body:JSON.stringify({model:'llama-3.3-70b-versatile',max_tokens:400,
-        messages:[
-          {role:'system',content:'Analista financiero senior. Respuestas en español correcto, sin markdown, concretas y accionables.'},
-          {role:'user',content:prompt}
-        ]})
-    });
-    if(!r.ok) throw new Error('Groq '+r.status);
-    var data=await r.json();
-    var analysis=data.choices&&data.choices[0]&&data.choices[0].message&&data.choices[0].message.content;
-    if(!analysis) throw new Error('empty');
-    analysis=analysis.replace(/[؀-ۿݐ-ݿ一-鿿]+/g,'').trim();
-    expandEl.innerHTML='<div style="font-size:12px;color:var(--sub);line-height:1.7;padding:10px 12px;background:var(--surface2);border-radius:8px;border-left:3px solid var(--accent);">'+esc(analysis)+'</div>';
+  // If no URL, show what we have
+  if(!n.url){
+    var fallback=n.summaryEs||n.summary||'Sin contenido adicional disponible.';
+    fallback=fallback.replace(/<[^>]+>/g,'').trim();
+    expandEl.innerHTML='<div style="font-size:12px;color:var(--sub);line-height:1.7;padding:10px 12px;background:var(--surface2);border-radius:8px;border-left:3px solid var(--border2);">'+esc(fallback)+'</div>';
     expandEl.dataset.expanded='1';
     if(btn){btn.textContent='▲ Ocultar';btn.style.pointerEvents='';}
-  }catch(e){
-    expandEl.innerHTML='<div style="font-size:11px;color:var(--down);padding:6px;">No se pudo analizar: '+e.message+'</div>';
+    return;
+  }
+
+  try{
+    var r=await fetch(PROXY+'?type=article&url='+encodeURIComponent(n.url));
+    var data=await r.json();
+    if(data.error) throw new Error(data.error);
+
+    var content=data.content||'';
+    var paragraphs=content.split('
+
+').filter(function(p){return p.trim().length>40;});
+
+    if(!paragraphs.length && data.description){
+      paragraphs=[data.description];
+    }
+
+    if(!paragraphs.length){
+      // No body content extracted — site probably blocks scraping
+      throw new Error('blocked');
+    }
+
+    // Also show translation status
+    var needsTranslation=n.lang!=='es'&&!n.titleEs;
+    var langNote=needsTranslation?'<div style="font-size:10px;color:var(--muted);margin-bottom:8px;">Artículo en inglés — <a class="ni-link" href="https://translate.google.com/translate?sl=auto&tl=es&u='+encodeURIComponent(n.url)+'" target="_blank" rel="noopener">Ver traducido ↗</a></div>':'';
+
+    var wordCount=data.wordCount||0;
+    var meta='<div style="font-size:10px;color:var(--muted);font-family:DM Mono,monospace;margin-bottom:10px;">'
+      +esc(n.source||'')+(data.paragraphs?' · '+data.paragraphs+' párrafos':'')+(wordCount?' · ~'+wordCount+' palabras':'')
+      +'</div>';
+
+    var pHtml=paragraphs.slice(0,12).map(function(p){
+      return '<p style="margin-bottom:10px;">'+esc(p.trim())+'</p>';
+    }).join('');
+
+    var linkLine='<div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--border);">'
+      +'<a class="ni-link" href="'+n.url+'" target="_blank" rel="noopener">Leer artículo completo &#8599;</a>'
+      +'</div>';
+
+    expandEl.innerHTML='<div style="font-size:13px;color:var(--sub);line-height:1.75;padding:12px 14px;background:var(--surface2);border-radius:8px;border-left:3px solid var(--accent);">'
+      +langNote+meta+pHtml+linkLine+'</div>';
     expandEl.dataset.expanded='1';
-    if(btn){btn.textContent='▼ Más información';btn.style.pointerEvents='';}
+    if(btn){btn.textContent='▲ Ocultar';btn.style.pointerEvents='';}
+
+  }catch(e){
+    // Fallback: show summary + link to original
+    var fallbackSummary=n.summaryEs||n.summary||'';
+    fallbackSummary=fallbackSummary.replace(/<[^>]+>/g,'').trim();
+    var blockedMsg=e.message==='blocked'
+      ?'Este medio no permite extraer el contenido directamente.'
+      :'No se pudo cargar el contenido ('+e.message+').';
+    expandEl.innerHTML='<div style="font-size:12px;color:var(--sub);line-height:1.6;padding:10px 12px;background:var(--surface2);border-radius:8px;border-left:3px solid var(--warn);">'
+      +'<div style="color:var(--muted);font-size:10px;margin-bottom:8px;">'+blockedMsg+'</div>'
+      +(fallbackSummary?'<p style="margin-bottom:8px;">'+esc(fallbackSummary)+'</p>':'')
+      +(n.url?'<a class="ni-link" href="'+n.url+'" target="_blank" rel="noopener">Abrir artículo original &#8599;</a>':'')
+      +'</div>';
+    expandEl.dataset.expanded='1';
+    if(btn){btn.textContent='▲ Ocultar';btn.style.pointerEvents='';}
   }
 }
 
@@ -1019,7 +1047,7 @@ function renderNews(){
     rows+='<div class="ni-title">'+esc(displayTitle)+'</div>';
     if(displaySummary) rows+='<div class="ni-summary">'+esc(displaySummary)+'</div>';
     rows+='<div style="display:flex;gap:8px;align-items:center;margin-top:7px;flex-wrap:wrap;">';
-    rows+='<button id="expandbtn-'+i+'" onclick="expandNews('+i+')" style="font-size:11px;font-weight:600;color:var(--accent);background:rgba(0,212,255,0.08);border:1px solid rgba(0,212,255,0.2);border-radius:6px;padding:4px 10px;cursor:pointer;font-family:Outfit,sans-serif;">▼ Más información</button>';
+    rows+='<button id="expandbtn-'+i+'" onclick="expandNews('+i+')" style="font-size:11px;font-weight:600;color:var(--accent);background:rgba(0,212,255,0.08);border:1px solid rgba(0,212,255,0.2);border-radius:6px;padding:4px 10px;cursor:pointer;font-family:Outfit,sans-serif;">▼ Leer más</button>';
     if(linkHtml) rows+=linkHtml;
     rows+='</div>';
     rows+='<div id="expand-'+i+'" data-expanded="0" style="display:none;margin-top:8px;"></div>';
