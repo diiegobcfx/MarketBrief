@@ -160,6 +160,7 @@ body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;min-
 .cat-cb{background:rgba(255,165,0,0.12);color:var(--warn);}
 .cat-crypto{background:rgba(0,255,136,0.1);color:var(--up);}
 .cat-forex{background:rgba(138,155,176,0.1);color:var(--sub);}
+.cat-tv{background:rgba(255,165,0,0.12);color:#f97316;}
 .ni-source{font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;}
 .ni-date{font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;margin-left:auto;}
 .ni-title{font-size:13px;font-weight:600;line-height:1.4;margin-bottom:4px;}
@@ -359,6 +360,7 @@ body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;min-
       <div class="news-filter" data-cat="cb" onclick="setNewsFilter(this,'cb')">🏦 Bancos Centrales</div>
       <div class="news-filter" data-cat="crypto" onclick="setNewsFilter(this,'crypto')">₿ Cripto</div>
       <div class="news-filter" data-cat="forex" onclick="setNewsFilter(this,'forex')">💱 Forex</div>
+      <div class="news-filter" data-cat="tv" onclick="setNewsFilter(this,'tv')">📺 Reuters/Bloomberg</div>
     </div>
     <div id="newsContent"><div class="sl" style="height:300px;border-radius:var(--r)"></div></div>
   </div>
@@ -803,7 +805,8 @@ async function loadNews(){
       fetch(PROXY+'?type=finnhub_crypto').then(function(r){return r.json();}).catch(function(){return[];}),
       fetch(PROXY+'?type=geopolitics').then(function(r){return r.json();}).catch(function(){return[];}),
       fetch(PROXY+'?type=central_banks').then(function(r){return r.json();}).catch(function(){return[];}),
-      fetch(PROXY+'?type=news_es').then(function(r){return r.json();}).catch(function(){return[];})
+      fetch(PROXY+'?type=news_es').then(function(r){return r.json();}).catch(function(){return[];}),
+      fetch(PROXY+'?type=tv_news').then(function(r){return r.json();}).catch(function(){return[];})
     ];
     var results=await Promise.allSettled(reqs);
     allNewsItems=[];
@@ -840,6 +843,17 @@ async function loadNews(){
         });
       });
     }
+    // TradingView-equivalent sources: Reuters, Bloomberg, MarketWatch, Yahoo Finance, CNBC (index 6)
+    if(results[6] && results[6].status==='fulfilled' && Array.isArray(results[6].value)){
+      results[6].value.forEach(function(feed){
+        if(feed.items) feed.items.forEach(function(item){
+          allNewsItems.push({
+            cat:'tv', title:item.title, summary:item.summary,
+            source:feed.source, date:item.date, url:item.link||null
+          });
+        });
+      });
+    }
     renderNews();
   }catch(e){}
 }
@@ -855,7 +869,7 @@ function renderNews(){
     document.getElementById('newsContent').innerHTML='<div class="empty-state"><div class="ei">📰</div><p>No hay noticias disponibles.<br>Se cargan automáticamente cada 2 minutos.</p></div>';
     return;
   }
-  var catLabels={macro:'Macro',geo:'Geopolítica',cb:'Banco Central',crypto:'Cripto',forex:'Forex'};
+  var catLabels={macro:'Macro',geo:'Geopolítica',cb:'Banco Central',crypto:'Cripto',forex:'Forex',tv:'Reuters/Bloomberg'};
   var rows='';
   for(var i=0;i<Math.min(items.length,40);i++){
     var n=items[i];
