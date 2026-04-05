@@ -162,8 +162,6 @@ body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;min-
 .cat-forex{background:rgba(138,155,176,0.1);color:var(--sub);}
 .cat-tv{background:rgba(255,165,0,0.12);color:#f97316;}
 #newsSearch:focus{border-color:var(--accent);}
-#translateBtn:hover{border-color:var(--accent);color:var(--accent);}
-#translateBtn.loading{opacity:.6;pointer-events:none;}
 .translated-badge{font-size:9px;background:rgba(0,212,255,0.12);color:var(--accent);padding:1px 5px;border-radius:3px;font-weight:700;margin-left:4px;display:inline-block;}
 .ni-source{font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;}
 .ni-date{font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;margin-left:auto;}
@@ -358,13 +356,10 @@ body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;min-
   <!-- NEWS -->
   <div class="page" id="page-news">
     <!-- Search bar -->
-    <div style="display:flex;gap:8px;margin-bottom:10px;">
-      <input id="newsSearch" type="text" placeholder="Buscar: OMUSDT, Bitcoin, Fed..." 
-        style="flex:1;padding:10px 14px;background:var(--surface);border:1px solid var(--border2);border-radius:var(--r);color:var(--text);font-size:13px;font-family:'Outfit',sans-serif;outline:none;-webkit-appearance:none;"
+    <div style="position:relative;margin-bottom:10px;">
+      <input id="newsSearch" type="text" placeholder="🔍  Buscar: OMUSDT, Bitcoin, Fed, aranceles..." 
+        style="width:100%;padding:11px 14px;background:var(--surface);border:1px solid var(--border2);border-radius:var(--r);color:var(--text);font-size:13px;font-family:'Outfit',sans-serif;outline:none;-webkit-appearance:none;"
         oninput="onNewsSearch(this.value)" />
-      <button id="translateBtn" onclick="translateNews()" 
-        style="padding:10px 14px;background:var(--surface);border:1px solid var(--border2);border-radius:var(--r);font-size:12px;font-weight:600;cursor:pointer;color:var(--sub);font-family:'Outfit',sans-serif;white-space:nowrap;"
-        title="Traducir todas las noticias al español con IA">🌐 Traducir</button>
     </div>
     <div class="news-filters">
       <div class="news-filter on" data-cat="all" onclick="setNewsFilter(this,'all')">Todo</div>
@@ -375,7 +370,7 @@ body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;min-
       <div class="news-filter" data-cat="forex" onclick="setNewsFilter(this,'forex')">💱 Forex</div>
       <div class="news-filter" data-cat="tv" onclick="setNewsFilter(this,'tv')">📺 Reuters/Bloomberg</div>
     </div>
-    <div id="translateStatus" style="font-size:11px;color:var(--sub);font-family:'DM Mono',monospace;margin-bottom:8px;min-height:14px;"></div>
+    <div id="translateStatus" style="font-size:11px;color:var(--sub);font-family:'DM Mono',monospace;margin-bottom:4px;min-height:12px;"></div>
     <div id="newsContent"><div class="sl" style="height:300px;border-radius:var(--r)"></div></div>
   </div>
 
@@ -869,6 +864,8 @@ async function loadNews(){
       });
     }
     renderNews();
+    // Auto-translate in background (no button needed)
+    autoTranslateNews();
   }catch(e){}
 }
 
@@ -882,113 +879,150 @@ function onNewsSearch(val){
   renderNews();
 }
 
-async function translateNews(){
+// Auto-translate in background — no button, no interruption
+var _translating=false;
+async function autoTranslateNews(){
   var groqKey=localStorage.getItem('mb_groq_key');
-  if(!groqKey){alert('Necesitas tu API key de Groq para traducir.');return;}
-  
-  // Get items to translate (not already translated, not Spanish)
-  var toTranslate=allNewsItems.filter(function(n){return !n.titleEs && n.lang!=='es';});
-  if(!toTranslate.length){
-    document.getElementById('translateStatus').textContent='Todas las noticias ya están traducidas.';
-    return;
-  }
-  
-  var btn=document.getElementById('translateBtn');
-  btn.classList.add('loading');
-  btn.textContent='⏳ Traduciendo...';
-  document.getElementById('translateStatus').textContent='Traduciendo '+toTranslate.length+' noticias...';
-  
-  // Translate in batches of 10 to stay within token limits
-  var batchSize=10;
-  var translated=0;
-  
+  if(!groqKey||_translating) return;
+  var toTranslate=allNewsItems.filter(function(n){return !n.titleEs && n.lang!=='es' && n.title;});
+  if(!toTranslate.length) return;
+  _translating=true;
+  var statusEl=document.getElementById('translateStatus');
+  if(statusEl) statusEl.textContent='🌐 Traduciendo '+toTranslate.length+' noticias...';
+  var batchSize=15; // bigger batches = faster
   for(var i=0;i<toTranslate.length;i+=batchSize){
     var batch=toTranslate.slice(i,i+batchSize);
     var numbered=batch.map(function(n,idx){
-      return (idx+1)+'. TITULO: '+(n.title||'')+'\nRESUMEN: '+(n.summary?n.summary.replace(/<[^>]+>/g,'').replace(/&[a-z]+;/gi,' ').trim().slice(0,150):'');
-    }).join('\n\n');
-    
+      var rawSummary=n.summary?n.summary.replace(/<[^>]+>/g,'').replace(/&[a-z]+;/gi,' ').trim().slice(0,200):'';
+      return (idx+1)+'. T: '+(n.title||'')+' | S: '+rawSummary;
+    }).join('
+');
     try{
       var r=await fetch('https://api.groq.com/openai/v1/chat/completions',{
         method:'POST',
         headers:{'Content-Type':'application/json','Authorization':'Bearer '+groqKey},
         body:JSON.stringify({
-          model:'llama-3.3-70b-versatile', max_tokens:2000,
+          model:'llama-3.3-70b-versatile', max_tokens:3000,
           messages:[
-            {role:'system',content:'Eres un traductor profesional de noticias financieras. Traduce al español natural y preciso. Responde SOLO con JSON, sin markdown: {"translations":[{"t":"titulo traducido","s":"resumen traducido"},{"t":"...","s":"..."}]}. Mantén los nombres propios, tickers y términos técnicos financieros en inglés si es más claro.'},
-            {role:'user',content:'Traduce estas noticias financieras al español:\n\n'+numbered}
+            {role:'system',content:'Traductor de noticias financieras. Responde SOLO JSON sin markdown: {"t":[{"t":"titulo ES","s":"resumen ES"},...]}, un objeto por noticia en el mismo orden. Mantén tickers, nombres propios y términos técnicos en inglés. Resúmenes concisos en español.'},
+            {role:'user',content:'Traduce al español:
+'+numbered}
           ]
         })
       });
-      if(!r.ok) throw new Error('Groq '+r.status);
+      if(!r.ok) throw new Error('HTTP '+r.status);
       var data=await r.json();
       var raw=data.choices&&data.choices[0]&&data.choices[0].message&&data.choices[0].message.content;
       if(!raw) throw new Error('empty');
-      var clean=raw.replace(/```json|```/g,'').trim();
-      var parsed=JSON.parse(clean.match(/\{[\s\S]*\}/)[0]);
-      var translations=parsed.translations||[];
-      
-      translations.forEach(function(tr,idx){
-        if(batch[idx]){
-          if(tr.t) batch[idx].titleEs=tr.t;
-          if(tr.s) batch[idx].summaryEs=tr.s;
-        }
+      var parsed=JSON.parse(raw.replace(/```json|```/g,'').trim().match(/\{[\s\S]*\}/)[0]);
+      var trs=parsed.t||[];
+      trs.forEach(function(tr,idx){
+        if(batch[idx]){if(tr.t)batch[idx].titleEs=tr.t;if(tr.s)batch[idx].summaryEs=tr.s;}
       });
-      translated+=batch.length;
-      document.getElementById('translateStatus').textContent='Traducidas '+translated+' de '+toTranslate.length+'...';
       renderNews();
-    }catch(e){
-      console.warn('Translate batch error:',e.message);
-    }
-    // Small delay between batches
-    if(i+batchSize<toTranslate.length) await new Promise(function(res){setTimeout(res,500);});
+    }catch(e){console.warn('autotranslate batch',i,e.message);}
+    if(i+batchSize<toTranslate.length) await new Promise(function(res){setTimeout(res,300);});
   }
-  
-  btn.classList.remove('loading');
-  btn.textContent='🌐 Traducir';
-  document.getElementById('translateStatus').textContent='✅ '+translated+' noticias traducidas al español';
-  renderNews();
+  _translating=false;
+  if(statusEl) statusEl.textContent='';
 }
 
+// Expand a news item with AI analysis
+async function expandNews(idx){
+  var groqKey=localStorage.getItem('mb_groq_key');
+  var n=_currentNewsItems[idx];
+  if(!n) return;
+  var expandEl=document.getElementById('expand-'+idx);
+  if(!expandEl) return;
+  // Toggle: if already expanded, collapse
+  if(expandEl.dataset.expanded==='1'){
+    expandEl.style.display='none';
+    expandEl.dataset.expanded='0';
+    var btn=document.getElementById('expandbtn-'+idx);
+    if(btn) btn.textContent='▼ Más información';
+    return;
+  }
+  var btn=document.getElementById('expandbtn-'+idx);
+  if(btn){btn.textContent='⏳ Analizando...';btn.style.pointerEvents='none';}
+  expandEl.style.display='block';
+  expandEl.innerHTML='<div style="display:flex;gap:6px;align-items:center;color:var(--muted);font-size:12px;padding:8px 0;"><span style="animation:sh 1s infinite">⚙</span> Generando análisis...</div>';
+
+  var title=n.titleEs||n.title||'';
+  var summary=n.summaryEs||(n.summary?n.summary.replace(/<[^>]+>/g,'').trim():'');
+  var prompt='Noticia: '+title+'
+Resumen: '+summary+'
+Fuente: '+(n.source||'')+'
+Fecha: '+(n.date||'')+'
+
+Analiza esta noticia financiera en español. Dame:
+1. Contexto: qué está pasando exactamente y por qué es importante ahora
+2. Impacto en mercados: qué activos se ven afectados (forex, cripto, bolsa, materias primas) y en qué dirección
+3. Qué vigilar: qué datos o eventos próximos relacionados hay que seguir
+4. Conclusión operativa: qué implica para un trader hoy
+
+Sé específico, concreto y útil. 150-200 palabras. Sin asteriscos ni markdown.';
+
+  try{
+    if(!groqKey) throw new Error('Sin API key');
+    var r=await fetch('https://api.groq.com/openai/v1/chat/completions',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+groqKey},
+      body:JSON.stringify({model:'llama-3.3-70b-versatile',max_tokens:400,
+        messages:[
+          {role:'system',content:'Analista financiero senior. Respuestas en español correcto, sin markdown, concretas y accionables.'},
+          {role:'user',content:prompt}
+        ]})
+    });
+    if(!r.ok) throw new Error('Groq '+r.status);
+    var data=await r.json();
+    var analysis=data.choices&&data.choices[0]&&data.choices[0].message&&data.choices[0].message.content;
+    if(!analysis) throw new Error('empty');
+    analysis=analysis.replace(/[؀-ۿݐ-ݿ一-鿿]+/g,'').trim();
+    expandEl.innerHTML='<div style="font-size:12px;color:var(--sub);line-height:1.7;padding:10px 12px;background:var(--surface2);border-radius:8px;border-left:3px solid var(--accent);">'+esc(analysis)+'</div>';
+    expandEl.dataset.expanded='1';
+    if(btn){btn.textContent='▲ Ocultar';btn.style.pointerEvents='';}
+  }catch(e){
+    expandEl.innerHTML='<div style="font-size:11px;color:var(--down);padding:6px;">No se pudo analizar: '+e.message+'</div>';
+    expandEl.dataset.expanded='1';
+    if(btn){btn.textContent='▼ Más información';btn.style.pointerEvents='';}
+  }
+}
+
+var _currentNewsItems=[];
 function renderNews(){
   var items=allNewsItems.filter(function(n){
     if(newsFilter!=='all' && n.cat!==newsFilter) return false;
     if(newsQuery){
       var q=newsQuery.toLowerCase();
-      var searchIn=(n.titleEs||n.title||'')+(n.summaryEs||n.summary||'')+(n.source||'');
-      if(searchIn.toLowerCase().indexOf(q)===-1) return false;
+      var searchIn=(n.titleEs||n.title||'').toLowerCase()+(n.summaryEs||n.summary||'').toLowerCase()+(n.source||'').toLowerCase();
+      if(searchIn.indexOf(q)===-1) return false;
     }
     return true;
   });
+  _currentNewsItems=items; // store for expandNews
   if(!items.length){
-    document.getElementById('newsContent').innerHTML='<div class="empty-state"><div class="ei">📰</div><p>No hay noticias disponibles.<br>Se cargan automáticamente cada 2 minutos.</p></div>';
+    document.getElementById('newsContent').innerHTML='<div class="empty-state"><div class="ei">📰</div><p>Sin resultados'+(newsQuery?' para "'+newsQuery+'"':'')+'.</p></div>';
     return;
   }
   var catLabels={macro:'Macro',geo:'Geopolítica',cb:'Banco Central',crypto:'Cripto',forex:'Forex',tv:'Reuters/Bloomberg'};
   var rows='';
-  for(var i=0;i<Math.min(items.length,40);i++){
+  for(var i=0;i<Math.min(items.length,60);i++){
     var n=items[i];
-    var esBadge=n.lang==='es'?'<span style="font-size:9px;background:rgba(255,165,0,0.15);color:#ffa500;padding:1px 5px;border-radius:3px;font-weight:700;margin-left:4px;display:inline-block;">ES</span>':'';
-    // summary handled below via displaySummary
-    var linkHtml='';
-    if(n.url){
-      linkHtml+='<a class="ni-link" href="'+n.url+'" target="_blank" rel="noopener">Leer &#8599;</a>';
-      if(n.lang!=='es'){
-        linkHtml+=' <a class="ni-link" href="https://translate.google.com/translate?sl=auto&tl=es&u='+encodeURIComponent(n.url)+'" target="_blank" rel="noopener">ES &#8599;</a>';
-      }
-    }
-    var catLabel=catLabels[n.cat]||n.cat||'';
-    var dateStr=n.date?String(n.date).slice(0,10):'';
-    var sourceStr=n.source||'';
-    rows+='<div class="news-item">';
-    rows+='<div class="ni-meta"><span class="ni-cat cat-'+n.cat+'">'+catLabel+'</span>'+esBadge+'<span class="ni-source">'+sourceStr+'</span><span class="ni-date">'+dateStr+'</span></div>';
-    // Show translated title if available, original otherwise
     var displayTitle=n.titleEs||n.title||'';
     var displaySummary=n.summaryEs||(n.summary?n.summary.replace(/<[^>]+>/g,'').replace(/&[a-z]+;/gi,' ').replace(/\s+/g,' ').trim():'');
-    var trBadge=n.titleEs?'<span class="translated-badge">ES ✓</span>':'';
-    rows+='<div class="ni-title">'+esc(displayTitle)+trBadge+'</div>';
-    if(displaySummary)rows+='<div class="ni-summary">'+esc(displaySummary)+'</div>';
-    if(linkHtml)rows+='<div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap;">'+linkHtml+'</div>';
+    var catLabel=catLabels[n.cat]||n.cat||'';
+    var dateStr=n.date?String(n.date).slice(0,10):'';
+    var linkHtml='';
+    if(n.url) linkHtml='<a class="ni-link" href="'+n.url+'" target="_blank" rel="noopener">Artículo original &#8599;</a>';
+    rows+='<div class="news-item">';
+    rows+='<div class="ni-meta"><span class="ni-cat cat-'+n.cat+'">'+catLabel+'</span><span class="ni-source">'+esc(n.source||'')+'</span><span class="ni-date">'+dateStr+'</span></div>';
+    rows+='<div class="ni-title">'+esc(displayTitle)+'</div>';
+    if(displaySummary) rows+='<div class="ni-summary">'+esc(displaySummary)+'</div>';
+    rows+='<div style="display:flex;gap:8px;align-items:center;margin-top:7px;flex-wrap:wrap;">';
+    rows+='<button id="expandbtn-'+i+'" onclick="expandNews('+i+')" style="font-size:11px;font-weight:600;color:var(--accent);background:rgba(0,212,255,0.08);border:1px solid rgba(0,212,255,0.2);border-radius:6px;padding:4px 10px;cursor:pointer;font-family:Outfit,sans-serif;">▼ Más información</button>';
+    if(linkHtml) rows+=linkHtml;
+    rows+='</div>';
+    rows+='<div id="expand-'+i+'" data-expanded="0" style="display:none;margin-top:8px;"></div>';
     rows+='</div>';
   }
   document.getElementById('newsContent').innerHTML='<div class="news-list">'+rows+'</div>';
