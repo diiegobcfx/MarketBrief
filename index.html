@@ -220,29 +220,29 @@ body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;min-
   <div class="setup-section">
     <div class="setup-lbl">Mercados que operas</div>
     <div class="chips">
-      <span class="chip" data-cat="indices">Indices</span>
-      <span class="chip" data-cat="forex">Forex</span>
-      <span class="chip" data-cat="crypto">Cripto</span>
-      <span class="chip" data-cat="commodities">Materias primas</span>
-      <span class="chip" data-cat="stocks">Acciones</span>
+      <span class="chip" data-cat="indices">📈 Índices</span>
+      <span class="chip" data-cat="forex">💱 Forex</span>
+      <span class="chip" data-cat="crypto">₿ Cripto</span>
+      <span class="chip" data-cat="commodities">🛢 Materias primas</span>
+      <span class="chip" data-cat="stocks">🏢 Acciones</span>
     </div>
   </div>
   <div class="setup-section">
     <div class="setup-lbl">Estilo de trading</div>
     <div class="chips">
-      <span class="chip" data-style="scalping">Scalping</span>
-      <span class="chip" data-style="intradiario">Intradia</span>
-      <span class="chip" data-style="swing">Swing</span>
-      <span class="chip" data-style="posicional">Posicional</span>
+      <span class="chip" data-style="scalping">⚡ Scalping</span>
+      <span class="chip" data-style="intradiario">📅 Intradía</span>
+      <span class="chip" data-style="swing">📊 Swing</span>
+      <span class="chip" data-style="posicional">📆 Posicional</span>
     </div>
   </div>
   <div class="setup-section">
     <div class="setup-lbl">Zona horaria</div>
     <div class="chips">
-      <span class="chip on" data-tz="europe">Europa</span>
-      <span class="chip" data-tz="latam">Latam</span>
-      <span class="chip" data-tz="us">EE.UU.</span>
-      <span class="chip" data-tz="asia">Asia</span>
+      <span class="chip on" data-tz="europe">🇪🇸 Europa</span>
+      <span class="chip" data-tz="latam">🌎 Latam</span>
+      <span class="chip" data-tz="us">🇺🇸 EE.UU.</span>
+      <span class="chip" data-tz="asia">🌏 Asia</span>
     </div>
   </div>
   <button class="setup-btn" onclick="saveSetup()">Entrar</button>
@@ -259,7 +259,7 @@ body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;min-
     <div style="display:flex;align-items:center;gap:6px;">
       <span class="live-dot">LIVE</span>
       <div class="session-badge session-off" id="sessionBadge">-</div>
-      <button class="icon-btn" onclick="toggleTheme()" id="themeBtn">Luna</button>
+      <button class="icon-btn" onclick="toggleTheme()" id="themeBtn">🌙</button>
     </div>
   </div>
 
@@ -290,8 +290,8 @@ body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;min-
         <span style="font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;" id="priceTime">-</span>
       </div>
       <div class="price-tabs">
-        <div class="ptab on" id="pt-crypto" onclick="switchPriceTab('crypto')">Cripto</div>
-        <div class="ptab" id="pt-forex" onclick="switchPriceTab('forex')">Forex</div>
+        <div class="ptab on" id="pt-crypto" onclick="switchPriceTab('crypto')">₿ Cripto</div>
+        <div class="ptab" id="pt-forex" onclick="switchPriceTab('forex')">💱 Forex</div>
       </div>
       <div class="price-grid" id="priceGrid">
         <div class="sl" style="height:58px;border-radius:9px;"></div>
@@ -302,7 +302,7 @@ body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;min-
     </div>
 
     <div class="card">
-      <div class="card-title">Senales IA por activo</div>
+      <div class="card-title">⚡ Señales IA por activo</div>
       <div class="signal-grid" id="signalGrid">
         <div class="sl" style="height:58px;border-radius:9px;"></div>
         <div class="sl" style="height:58px;border-radius:9px;"></div>
@@ -312,7 +312,7 @@ body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;min-
     </div>
 
     <div class="card">
-      <div class="card-title">Datos Macro FRED</div>
+      <div class="card-title">📊 Datos Macro FRED</div>
       <div class="macro-grid" id="macroGrid">
         <div class="sl" style="height:52px;border-radius:9px;"></div>
         <div class="sl" style="height:52px;border-radius:9px;"></div>
@@ -322,24 +322,24 @@ body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;min-
     </div>
 
     <div class="card">
-      <div class="card-title">WallStreetBets - Top menciones Reddit</div>
+      <div class="card-title">🎰 WallStreetBets — Top menciones Reddit</div>
       <div id="wsbList"><div class="sl" style="height:120px;border-radius:9px;"></div></div>
     </div>
-    <button class="reset-btn" onclick="resetSetup()">Cambiar configuracion</button>
+    <button class="reset-btn" onclick="resetSetup()">⚙️ Cambiar configuración</button>
   </div>
 
   <!-- CALENDAR -->
   <div class="page" id="page-calendar">
     <div class="cal-scroll" id="calImpactRow">
       <div class="cal-filter on" data-impact="all" onclick="setCalImpact(this,'all')">Todos</div>
-      <div class="cal-filter" data-impact="High" onclick="setCalImpact(this,'High')">Alto impacto</div>
-      <div class="cal-filter" data-impact="Medium" onclick="setCalImpact(this,'Medium')">Medio</div>
-      <div class="cal-filter" data-impact="Low" onclick="setCalImpact(this,'Low')">Bajo</div>
-      <div class="cal-filter" data-country="USD" onclick="setCalCountry(this,'USD')">USD</div>
-      <div class="cal-filter" data-country="EUR" onclick="setCalCountry(this,'EUR')">EUR</div>
-      <div class="cal-filter" data-country="GBP" onclick="setCalCountry(this,'GBP')">GBP</div>
-      <div class="cal-filter" data-country="JPY" onclick="setCalCountry(this,'JPY')">JPY</div>
-      <div class="cal-filter" data-country="CNY" onclick="setCalCountry(this,'CNY')">CNY</div>
+      <div class="cal-filter" data-impact="High" onclick="setCalImpact(this,'High')">🔴 Alto</div>
+      <div class="cal-filter" data-impact="Medium" onclick="setCalImpact(this,'Medium')">🟡 Medio</div>
+      <div class="cal-filter" data-impact="Low" onclick="setCalImpact(this,'Low')">🟢 Bajo</div>
+      <div class="cal-filter" data-country="USD" onclick="setCalCountry(this,'USD')">🇺🇸 USD</div>
+      <div class="cal-filter" data-country="EUR" onclick="setCalCountry(this,'EUR')">🇪🇺 EUR</div>
+      <div class="cal-filter" data-country="GBP" onclick="setCalCountry(this,'GBP')">🇬🇧 GBP</div>
+      <div class="cal-filter" data-country="JPY" onclick="setCalCountry(this,'JPY')">🇯🇵 JPY</div>
+      <div class="cal-filter" data-country="CNY" onclick="setCalCountry(this,'CNY')">🇨🇳 CNY</div>
     </div>
     <div class="cal-scroll" id="dayTabs"></div>
     <div id="calContent"><div class="sl" style="height:300px;border-radius:var(--r);"></div></div>
@@ -350,12 +350,12 @@ body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;min-
     <input class="news-search" type="text" placeholder="Buscar: OMUSDT, Bitcoin, Fed..." oninput="onNewsSearch(this.value)" />
     <div class="news-filters">
       <div class="news-filter on" data-cat="all" onclick="setNewsFilter(this,'all')">Todo</div>
-      <div class="news-filter" data-cat="macro" onclick="setNewsFilter(this,'macro')">Macro</div>
-      <div class="news-filter" data-cat="geo" onclick="setNewsFilter(this,'geo')">Geopolitica</div>
-      <div class="news-filter" data-cat="cb" onclick="setNewsFilter(this,'cb')">Bancos Centrales</div>
-      <div class="news-filter" data-cat="crypto" onclick="setNewsFilter(this,'crypto')">Cripto</div>
-      <div class="news-filter" data-cat="forex" onclick="setNewsFilter(this,'forex')">Forex</div>
-      <div class="news-filter" data-cat="tv" onclick="setNewsFilter(this,'tv')">Reuters/Bloomberg</div>
+      <div class="news-filter" data-cat="macro" onclick="setNewsFilter(this,'macro')">📡 Macro</div>
+      <div class="news-filter" data-cat="geo" onclick="setNewsFilter(this,'geo')">🌍 Geopolítica</div>
+      <div class="news-filter" data-cat="cb" onclick="setNewsFilter(this,'cb')">🏦 Bancos Centrales</div>
+      <div class="news-filter" data-cat="crypto" onclick="setNewsFilter(this,'crypto')">₿ Cripto</div>
+      <div class="news-filter" data-cat="forex" onclick="setNewsFilter(this,'forex')">💱 Forex</div>
+      <div class="news-filter" data-cat="tv" onclick="setNewsFilter(this,'tv')">📺 Reuters/Bloomberg</div>
     </div>
     <div class="news-status" id="newsStatus"></div>
     <div id="newsContent"><div class="sl" style="height:300px;border-radius:var(--r);"></div></div>
@@ -364,13 +364,13 @@ body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;min-
   <!-- BRIEFING -->
   <div class="page" id="page-briefing">
     <div class="briefing-controls">
-      <button id="briefingBtn" onclick="generateBriefing()">Generar Briefing de Hoy</button>
-      <button id="ttsBtn" onclick="toggleTTS()" title="Escuchar briefing">Play</button>
+      <button id="briefingBtn" onclick="generateBriefing()">⚡ Generar Briefing de Hoy</button>
+      <button id="ttsBtn" onclick="toggleTTS()" title="Escuchar briefing">🔊</button>
     </div>
     <div id="lastUpdated" class="last-updated" style="display:none;"></div>
     <div id="stepMsg" class="step-msg"></div>
     <div id="briefingContent">
-      <div class="empty-state"><div class="ei">AI</div><p>Pulsa el boton para generar tu briefing completo con datos reales.</p></div>
+      <div class="empty-state"><div class="ei">🤖</div><p>Pulsa el boton para generar tu briefing completo con datos reales.</p></div>
     </div>
   </div>
 
@@ -380,11 +380,11 @@ body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;min-
   </div>
 
   <nav class="nav">
-    <button class="nav-btn active" id="nav-dashboard" onclick="goTo('dashboard')"><span class="ni">D</span>Dashboard</button>
-    <button class="nav-btn" id="nav-calendar" onclick="goTo('calendar')"><span class="ni">C</span>Calendario</button>
-    <button class="nav-btn" id="nav-news" onclick="goTo('news')"><span class="ni">N</span>Noticias</button>
-    <button class="nav-btn" id="nav-briefing" onclick="goTo('briefing')"><span class="ni">B</span>Briefing</button>
-    <button class="nav-btn" id="nav-history" onclick="goTo('history')"><span class="ni">H</span>Historial</button>
+    <button class="nav-btn active" id="nav-dashboard" onclick="goTo('dashboard')"><span class="ni">📊</span>Dashboard</button>
+    <button class="nav-btn" id="nav-calendar" onclick="goTo('calendar')"><span class="ni">📅</span>Calendario</button>
+    <button class="nav-btn" id="nav-news" onclick="goTo('news')"><span class="ni">📰</span>Noticias</button>
+    <button class="nav-btn" id="nav-briefing" onclick="goTo('briefing')"><span class="ni">🤖</span>Briefing</button>
+    <button class="nav-btn" id="nav-history" onclick="goTo('history')"><span class="ni">📁</span>Historial</button>
   </nav>
 </div>
 
@@ -443,7 +443,7 @@ function bootApp() {
   document.getElementById('setup').style.display = 'none';
   document.getElementById('app').style.display = 'block';
   if (theme === 'light') document.body.classList.add('light');
-  document.getElementById('themeBtn').textContent = theme === 'dark' ? 'Luna' : 'Sol';
+  document.getElementById('themeBtn').textContent = theme === 'dark' ? '🌙' : '☀️';
   refreshNow();
   updateUI();
   loadAll();
@@ -461,7 +461,7 @@ function resetSetup() {
 function toggleTheme() {
   theme = theme === 'dark' ? 'light' : 'dark';
   document.body.classList.toggle('light', theme === 'light');
-  document.getElementById('themeBtn').textContent = theme === 'dark' ? 'Luna' : 'Sol';
+  document.getElementById('themeBtn').textContent = theme === 'dark' ? '🌙' : '☀️';
   localStorage.setItem('mb_theme', theme);
 }
 
@@ -894,7 +894,7 @@ function renderNews() {
   });
   currentNewsItems = items;
   if (!items.length) {
-    document.getElementById('newsContent').innerHTML = '<div class="empty-state"><div class="ei">N</div><p>Sin resultados' + (newsQuery ? ' para "' + newsQuery + '"' : '') + '.</p></div>';
+    document.getElementById('newsContent').innerHTML = '<div class="empty-state"><div class="ei">📰</div><p>Sin resultados' + (newsQuery ? ' para "' + newsQuery + '"' : '') + '.</p></div>';
     return;
   }
   var rows = '';
@@ -969,9 +969,9 @@ function autoLoadBriefing() {
 
 function setBriefingBtn(state) {
   var btn = document.getElementById('briefingBtn');
-  if (state === 'done') { btn.textContent = 'Actualizar con noticias nuevas'; btn.className = 'done'; btn.disabled = false; }
+  if (state === 'done') { btn.textContent = '🔄 Actualizar con noticias nuevas'; btn.className = 'done'; btn.disabled = false; }
   else if (state === 'loading') { btn.textContent = 'Generando...'; btn.className = ''; btn.disabled = true; }
-  else { btn.textContent = 'Generar Briefing de Hoy'; btn.className = ''; btn.disabled = false; }
+  else { btn.textContent = '⚡ Generar Briefing de Hoy'; btn.className = ''; btn.disabled = false; }
 }
 
 function showBriefingUpdated(ts) {
@@ -1203,7 +1203,7 @@ function stopTTS() {
   window.speechSynthesis.cancel();
   ttsPlaying = false;
   var btn = document.getElementById('ttsBtn');
-  if (btn) { btn.textContent = 'Play'; btn.classList.remove('playing'); }
+  if (btn) { btn.textContent = '🔊'; btn.classList.remove('playing'); }
 }
 
 // ── HISTORY ──────────────────────────────────────────────────────────
