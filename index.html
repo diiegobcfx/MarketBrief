@@ -496,6 +496,9 @@ function startAutoRefresh() {
     refreshNow(); updateUI(); tickCount++;
     loadPrices(); loadFG();                              // every 30s
     if (tickCount % 4 === 0) { loadCalendar(); loadNews(); } // every 2min
+    // Also check if any event just published (every 30s during market hours)
+    var utcH = new Date().getUTCHours();
+    if (utcH >= 6 && utcH <= 22) { checkJustPublished(); }
     if (tickCount % 10 === 0) { loadSignals(); loadWSB(); loadMacro(); } // every 5min
   }, 30000);
 }
@@ -680,6 +683,19 @@ async function loadSignals() {
 }
 
 // ── CALENDAR ──────────────────────────────────────────────────────────
+function checkJustPublished() {
+  var now3 = new Date();
+  var needRefresh = allCalEvents.some(function(e) {
+    if (!e.date || e.actual) return false;
+    try {
+      var t = new Date(e.date);
+      var diff = now3 - t;
+      return diff >= 0 && diff < 90000; // published in last 90 seconds
+    } catch(ex) { return false; }
+  });
+  if (needRefresh) loadCalendar();
+}
+
 async function loadCalendar() {
   try {
     var r = await fetch(PROXY + '?type=calendar');
@@ -763,12 +779,50 @@ function renderCalendar() {
       html += '<tr style="' + rowBg + '">'
         + '<td><span class="cal-dot ' + dotCls + '"></span></td>'
         + '<td><div class="cal-title-cell">' + esc(e.title || '') + '</div><div class="cal-country">' + esc(e.country || '') + '</div></td>'
-        + '<td class="cal-time">' + esc(timeStr) + '</td>'
+        + '<td class="cal-time" id="cd-' + (e.title||'').replace(/[^a-zA-Z0-9]/g,'').slice(0,20) + '">' + esc(timeStr) + '</td>'
         + '<td>' + foreStr + '</td><td>' + prevStr + '</td><td>' + realStr + '</td></tr>';
     });
   });
   html += '</tbody></table>';
   document.getElementById('calContent').innerHTML = html;
+  startCalCountdown();
+}
+
+// Countdown timer for upcoming calendar events
+var calCountdownTimer = null;
+function startCalCountdown() {
+  if (calCountdownTimer) clearInterval(calCountdownTimer);
+  calCountdownTimer = setInterval(updateCountdowns, 1000);
+  updateCountdowns();
+}
+
+function updateCountdowns() {
+  var now2 = new Date();
+  allCalEvents.forEach(function(e) {
+    if (!e.date || e.actual) return; // skip if no date or already published
+    var eventTime = null;
+    try { eventTime = new Date(e.date); } catch(ex) { return; }
+    var diffMs = eventTime - now2;
+    var diffMin = diffMs / 60000;
+
+    // Find the time cell for this event
+    var key = (e.title||'').replace(/[^a-zA-Z0-9]/g,'').slice(0,20);
+    var countdownEl = document.getElementById('cd-' + key);
+    if (!countdownEl) return;
+
+    if (diffMs <= 0 && diffMs > -3600000) {
+      // Event just passed - highlight and trigger refresh
+      countdownEl.innerHTML = '<span style="color:var(--accent2);font-weight:700;">Publicando...</span>';
+      countdownEl.closest('tr').style.background = 'rgba(0,255,136,0.06)';
+    } else if (diffMin > 0 && diffMin <= 5) {
+      // Countdown: less than 5 minutes
+      var secs = Math.floor(diffMs / 1000);
+      var mm = Math.floor(secs / 60);
+      var ss = String(secs % 60).padStart(2,'0');
+      countdownEl.innerHTML = '<span style="color:var(--warn);font-weight:700;font-family:DM Mono,monospace;">' + mm + ':' + ss + '</span>';
+      countdownEl.closest('tr').style.background = 'rgba(255,165,0,0.05)';
+    }
+  });
 }
 
 // ── NEWS ──────────────────────────────────────────────────────────────
@@ -784,41 +838,56 @@ async function loadNews() {
       fetch(PROXY + '?type=tv_news').then(function(r){return r.json();}).catch(function(){return [];})
     ];
     var results = await Promise.allSettled(reqs);
+    // Keep existing translations when refreshing
+    var oldByUrl = {};
+    allNewsItems.forEach(function(n) { if(n.url) oldByUrl[n.url] = n; });
     allNewsItems = [];
 
     var finnhubCats = ['macro','forex','crypto'];
     [0,1,2].forEach(function(i) {
       if (results[i].status === 'fulfilled' && Array.isArray(results[i].value)) {
         results[i].value.forEach(function(n) {
-          allNewsItems.push({cat:finnhubCats[i],title:n.headline,summary:n.summary,source:n.source,date:n.date,url:n.url||null});
+          var existing = n.url ? oldByUrl[n.url] : null;
+          allNewsItems.push({cat:finnhubCats[i],title:n.headline,summary:n.summary,source:n.source,date:n.date,url:n.url||null,
+            titleEs: existing ? existing.titleEs : null,
+            summaryEs: existing ? existing.summaryEs : null});
         });
       }
     });
     if (results[3].status === 'fulfilled' && Array.isArray(results[3].value)) {
       results[3].value.forEach(function(feed) {
         if (feed.items) feed.items.forEach(function(item) {
-          allNewsItems.push({cat:'geo',title:item.title,summary:item.summary,source:feed.source,date:item.date,url:item.link||null});
+          var existingGeo = item.link ? oldByUrl[item.link] : null;
+          allNewsItems.push({cat:'geo',title:item.title,summary:item.summary,source:feed.source,date:item.date,url:item.link||null,
+            titleEs: existingGeo ? existingGeo.titleEs : null,
+            summaryEs: existingGeo ? existingGeo.summaryEs : null});
         });
       });
     }
     if (results[4].status === 'fulfilled' && Array.isArray(results[4].value)) {
       results[4].value.forEach(function(feed) {
         if (feed.items) feed.items.forEach(function(item) {
-          allNewsItems.push({cat:'cb',title:item.title,summary:item.summary,source:feed.source,date:item.date,url:item.link||null});
+          var existingCb = item.link ? oldByUrl[item.link] : null;
+          allNewsItems.push({cat:'cb',title:item.title,summary:item.summary,source:feed.source,date:item.date,url:item.link||null,
+            titleEs: existingCb ? existingCb.titleEs : null,
+            summaryEs: existingCb ? existingCb.summaryEs : null});
         });
       });
     }
     if (results[5].status === 'fulfilled' && Array.isArray(results[5].value)) {
       results[5].value.forEach(function(feed) {
         if (feed.items) feed.items.forEach(function(item) {
-          allNewsItems.push({cat:'macro',title:item.title,summary:item.summary,source:feed.source,date:item.date,url:item.link||null,lang:'es'});
+          allNewsItems.push({cat:'macro',title:item.title,summary:item.summary,source:feed.source,date:item.date,url:item.link||null,lang:'es',titleEs:item.title,summaryEs:item.summary});
         });
       });
     }
     if (results[6] && results[6].status === 'fulfilled' && Array.isArray(results[6].value)) {
       results[6].value.forEach(function(feed) {
         if (feed.items) feed.items.forEach(function(item) {
-          allNewsItems.push({cat:'tv',title:item.title,summary:item.summary,source:feed.source,date:item.date,url:item.link||null});
+          var existingTv = item.link ? oldByUrl[item.link] : null;
+          allNewsItems.push({cat:'tv',title:item.title,summary:item.summary,source:feed.source,date:item.date,url:item.link||null,
+            titleEs: existingTv ? existingTv.titleEs : null,
+            summaryEs: existingTv ? existingTv.summaryEs : null});
         });
       });
     }
